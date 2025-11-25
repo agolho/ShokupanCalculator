@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shokupan Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .section-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #f5576c;
+            margin-bottom: 5px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f5576c;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.85em;
+        }
+        
+        input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #f5576c;
+        }
+        
+        .results {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .result-value {
+            font-weight: 700;
+            color: #f5576c;
+            font-size: 0.9em;
+        }
+        
+        .total-dough {
+            background: #f5576c;
+            color: white;
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+        
+        .total-dough .result-label,
+        .total-dough .result-value {
+            color: white;
+        }
+        
+        #canvas-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+            height: 400px;
+        }
+        
+        canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        .ingredients {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #ffd700;
+        }
+        
+        @media (max-width: 1024px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍞 Shokupan Dough Calculator</h1>
+        <p class="subtitle">Calculate ingredients for your loaf pan</p>
+        
+        <div class="content">
+            <!-- Pan Dimensions -->
+            <div class="section">
+                <h2 class="section-title">Pan Dimensions (cm)</h2>
+                <div class="input-group">
+                    <label for="x">Length (X)</label>
+                    <input type="number" id="x" value="20" min="0.1" step="0.1">
+                </div>
+                
+                <div class="input-group">
+                    <label for="y">Height (Y)</label>
+                    <input type="number" id="y" value="10" min="0.1" step="0.1">
+                </div>
+                
+                <div class="input-group">
+                    <label for="z">Depth (Z)</label>
+                    <input type="number" id="z" value="10" min="0.1" step="0.1">
+                </div>
+                
+                <h2 class="section-title">Dough Parameters</h2>
+                
+                <div class="input-group">
+                    <label for="grPerLiter">Grams per Liter</label>
+                    <input type="number" id="grPerLiter" value="286" min="1" step="1">
+                </div>
+                
+                <div class="input-group">
+                    <label for="density">Density Multiplier</label>
+                    <input type="number" id="density" value="1.0" min="0.1" step="0.1">
+                </div>
+                
+                <div class="input-group">
+                    <label for="hydration">Hydration (%)</label>
+                    <input type="number" id="hydration" value="70" min="1" step="1">
+                </div>
+                
+                <div class="results">
+                    <div class="result-item">
+                        <span class="result-label">Pan Volume:</span>
+                        <span class="result-value" id="volume">2000 cm³</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Volume (Liters):</span>
+                        <span class="result-value" id="volumeLiters">2.00 L</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 3D Visualization -->
+            <div class="section">
+                <h2 class="section-title">Pan Visualization</h2>
+                <div id="canvas-container"></div>
+            </div>
+            
+            <!-- Ingredients -->
+            <div class="section">
+                <h2 class="section-title">Ingredients (grams)</h2>
+                <div class="ingredients">
+                    <div class="result-item">
+                        <span class="result-label">Flour (Main):</span>
+                        <span class="result-value" id="flour">0 g</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Milk (16.7%):</span>
+                        <span class="result-value" id="milk">0 g</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Yudane Flour (20%):</span>
+                        <span class="result-value" id="yudaneFlour">0 g</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Yudane Water (40%):</span>
+                        <span class="result-value" id="yudaneWater">0 g</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Sugar (6%):</span>
+                        <span class="result-value" id="sugar">0 g</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Butter (5%):</span>
+                        <span class="result-value" id="butter">0 g</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Salt (1.7%):</span>
+                        <span class="result-value" id="salt">0 g</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Yeast (0.6%):</span>
+                        <span class="result-value" id="yeast">0 g</span>
+                    </div>
+                    <div class="result-item total-dough">
+                        <span class="result-label">TOTAL DOUGH:</span>
+                        <span class="result-value" id="totalDough">0 g</span>
+                    </div>
+                </div>
+                
+                <div class="results" style="margin-top: 15px;">
+                    <div class="result-item">
+                        <span class="result-label">Total Flour:</span>
+                        <span class="result-value" id="totalFlour">0 g</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total Water:</span>
+                        <span class="result-value" id="totalWater">0 g</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Actual Hydration:</span>
+                        <span class="result-value" id="actualHydration">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, cube;
+        
+        function init() {
+            const container = document.getElementById('canvas-container');
+            
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf5f7fa);
+            
+            camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            camera.position.set(15, 15, 15);
+            camera.lookAt(0, 0, 0);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(400, 400);
+            container.appendChild(renderer.domElement);
+            
+            const geometry = new THREE.BoxGeometry(20, 10, 10);
+            
+            // Add rounded edges to make it look more like a Pullman pan
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0xd4af37,
+                metalness: 0.8,
+                transparent: false,
+                opacity: 1,
+                shininess: 150,
+                specular: 0xffd700
+            });
+            cube = new THREE.Mesh(geometry, material);
+            
+            // Position cube so it sits like a loaf pan
+            cube.rotation.x = Math.PI * 0.05;
+            scene.add(cube);
+            
+            const edges = new THREE.EdgesGeometry(geometry);
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 });
+            const wireframe = new THREE.LineSegments(edges, lineMaterial);
+            cube.add(wireframe);
+            
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 10, 10);
+            scene.add(directionalLight);
+            
+            animate();
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            cube.rotation.y += 0.005;
+            renderer.render(scene, camera);
+        }
+        
+        function calculateIngredients() {
+            const x = parseFloat(document.getElementById('x').value) || 1;
+            const y = parseFloat(document.getElementById('y').value) || 1;
+            const z = parseFloat(document.getElementById('z').value) || 1;
+            const grPerLiter = parseFloat(document.getElementById('grPerLiter').value) || 450;
+            const density = parseFloat(document.getElementById('density').value) || 1.0;
+            const hydration = parseFloat(document.getElementById('hydration').value) || 70;
+            
+            // Calculate volume in cm³ and liters
+            const volumeCm3 = x * y * z;
+            const volumeLiters = volumeCm3 / 1000;
+            
+            // Calculate total dough weight
+            const totalDoughWeight = volumeLiters * grPerLiter * density;
+            
+            // Calculate flour percentage (100%)
+            // Total percentages: 100 (flour) + 16.7 (milk) + 20 (yudane flour) + 40 (yudane water) + 6 (sugar) + 5 (butter) + 1.7 (salt) + 0.6 (yeast)
+            const totalPercentage = 100 + 16.7 + 20 + 40 + 6 + 5 + 1.7 + 0.6;
+            
+            // Flour is the base (100%)
+            const flourBase = totalDoughWeight / totalPercentage * 100;
+            
+            // Calculate each ingredient based on flour percentage
+            const flour = flourBase;
+            const milk = flourBase * 0.167;
+            const yudaneFlour = flourBase * 0.20;
+            const yudaneWater = flourBase * 0.40;
+            const sugar = flourBase * 0.06;
+            const butter = flourBase * 0.05;
+            const salt = flourBase * 0.017;
+            const yeast = flourBase * 0.006;
+            
+            // Calculate totals
+            const totalFlour = flour + yudaneFlour;
+            const totalWater = yudaneWater; // Only yudane water in this recipe
+            const actualHydration = (totalWater / totalFlour) * 100;
+            
+            // Update display
+            document.getElementById('volume').textContent = volumeCm3.toFixed(2) + ' cm³';
+            document.getElementById('volumeLiters').textContent = volumeLiters.toFixed(2) + ' L';
+            
+            document.getElementById('flour').textContent = flour.toFixed(1) + ' g';
+            document.getElementById('milk').textContent = milk.toFixed(1) + ' g';
+            document.getElementById('yudaneFlour').textContent = yudaneFlour.toFixed(1) + ' g';
+            document.getElementById('yudaneWater').textContent = yudaneWater.toFixed(1) + ' g';
+            document.getElementById('sugar').textContent = sugar.toFixed(1) + ' g';
+            document.getElementById('butter').textContent = butter.toFixed(1) + ' g';
+            document.getElementById('salt').textContent = salt.toFixed(1) + ' g';
+            document.getElementById('yeast').textContent = yeast.toFixed(1) + ' g';
+            document.getElementById('totalDough').textContent = totalDoughWeight.toFixed(1) + ' g';
+            
+            document.getElementById('totalFlour').textContent = totalFlour.toFixed(1) + ' g';
+            document.getElementById('totalWater').textContent = totalWater.toFixed(1) + ' g';
+            document.getElementById('actualHydration').textContent = actualHydration.toFixed(1) + '%';
+            
+            // Update 3D cube with smooth animation
+            const targetScale = { x: x, y: y, z: z };
+            const currentScale = { 
+                x: cube.geometry.parameters.width,
+                y: cube.geometry.parameters.height,
+                z: cube.geometry.parameters.depth
+            };
+            
+            // Animate the transition
+            let progress = 0;
+            const animationDuration = 300; // milliseconds
+            const startTime = Date.now();
+            
+            function animateResize() {
+                progress = Math.min((Date.now() - startTime) / animationDuration, 1);
+                const easeProgress = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+                
+                const newX = currentScale.x + (targetScale.x - currentScale.x) * easeProgress;
+                const newY = currentScale.y + (targetScale.y - currentScale.y) * easeProgress;
+                const newZ = currentScale.z + (targetScale.z - currentScale.z) * easeProgress;
+                
+                cube.geometry.dispose();
+                cube.geometry = new THREE.BoxGeometry(newX, newY, newZ);
+                
+                const edges = new THREE.EdgesGeometry(cube.geometry);
+                cube.children[0].geometry.dispose();
+                cube.children[0].geometry = edges;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateResize);
+                }
+            }
+            
+            animateResize();
+            
+            const maxDim = Math.max(x, y, z);
+            const distance = maxDim * 2.5;
+            camera.position.set(distance, distance, distance);
+            camera.lookAt(0, 0, 0);
+        }
+        
+        document.getElementById('x').addEventListener('input', calculateIngredients);
+        document.getElementById('y').addEventListener('input', calculateIngredients);
+        document.getElementById('z').addEventListener('input', calculateIngredients);
+        document.getElementById('grPerLiter').addEventListener('input', calculateIngredients);
+        document.getElementById('density').addEventListener('input', calculateIngredients);
+        document.getElementById('hydration').addEventListener('input', calculateIngredients);
+        
+        init();
+        calculateIngredients();
+    </script>
+</body>
+</html>
