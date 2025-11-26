@@ -45,6 +45,9 @@
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 30px;
+            /* Add this line to allow more space for the new section */
+            grid-template-rows: auto;
+
         }
         
         .section {
@@ -150,7 +153,18 @@
             border-radius: 12px;
             border: 2px solid #ffd700;
         }
+
+        .cost-inputs-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
         
+
+        /* Add this to prevent overflow issues */
+        input[type=number] {
+            max-width: 150px;
+        }
         @media (max-width: 1024px) {
             .content {
                 grid-template-columns: 1fr;
@@ -161,7 +175,7 @@
 <body>
     <div class="container">
         <h1>🍞 Shokupan Dough Calculator</h1>
-        <p class="subtitle">Calculate ingredients for your loaf pan</p>
+        <p class="subtitle">Calculate ingredients and cost for your shokupan loaf!</p>
         
         <div class="content">
             <!-- Pan Dimensions -->
@@ -289,13 +303,80 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Cost Calculation Section -->
+            <div class="section">
+                <div class="input-group" style="flex-direction: row; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <input type="checkbox" id="showCost" style="width: auto; height: auto;">
+                    <label for="showCost" style="font-weight: 600; color: #555; font-size: 1em;">Show Cost Calculation</label>
+                </div>
+
+                <div id="costSection" style="display: none; flex-direction: column; gap: 15px;">
+                    <h2 class="section-title">Cost Calculation</h2>
+                    <div class="cost-inputs-grid">
+                        <div class="input-group">
+                            <label for="flourPrice">Flour Price (₺/kg)</label>
+                            <input type="number" id="flourPrice" value="36" min="0" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label for="milkPrice">Milk Price (₺/Liter)</label>
+                            <input type="number" id="milkPrice" value="50" min="0" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label for="sugarPrice">Sugar Price (₺/kg)</label>
+                            <input type="number" id="sugarPrice" value="50" min="0" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label for="butterPrice">Butter Price (₺/kg)</label>
+                            <input type="number" id="butterPrice" value="400" min="0" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label for="saltPrice">Salt Price (₺/kg)</label>
+                            <input type="number" id="saltPrice" value="45" min="0" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label for="yeastPrice">Yeast Price (₺/kg)</label>
+                            <input type="number" id="yeastPrice" value="1000" min="0" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label for="electricityPrice">Electricity Price (₺/kWh)</label>
+                            <input type="number" id="electricityPrice" value="3" min="0" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label for="bakingTime">Baking Time (minutes)</label>
+                            <input type="number" id="bakingTime" value="35" min="0" step="1">
+                        </div>
+                        <div class="input-group">
+                            <label for="ovenPower">Oven Power (kW)</label>
+                            <input type="number" id="ovenPower" value="2.0" min="0" step="0.1">
+                        </div>
+                    </div>
+
+                    <div class="results" style="margin-top: 15px;">
+                        <div class="result-item">
+                            <span class="result-label">Ingredients Cost:</span>
+                            <span class="result-value" id="ingredientsCost">₺0.00</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Electricity Cost:</span>
+                            <span class="result-value" id="electricityCost">₺0.00</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Total Cost per Loaf:</span>
+                            <span class="result-value" id="totalCost">₺0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+                </div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         let scene, camera, renderer, cube;
-        
         function init() {
             const container = document.getElementById('canvas-container');
             
@@ -396,6 +477,17 @@
             const saltPercent = 0.017;
             const yeastPercent = 0.006;
 
+            // Get prices from input fields
+            const flourPrice = parseFloat(document.getElementById('flourPrice').value) || 0;
+            const milkPrice = parseFloat(document.getElementById('milkPrice').value) || 0;
+            const sugarPrice = parseFloat(document.getElementById('sugarPrice').value) || 0;
+            const butterPrice = parseFloat(document.getElementById('butterPrice').value) || 0;
+            const saltPrice = parseFloat(document.getElementById('saltPrice').value) || 0;
+            const yeastPrice = parseFloat(document.getElementById('yeastPrice').value) || 0;
+            const electricityPrice = parseFloat(document.getElementById('electricityPrice').value) || 0;
+            const bakingTime = parseFloat(document.getElementById('bakingTime').value) || 0;
+            const ovenPower = parseFloat(document.getElementById('ovenPower').value) || 0;
+
             // Adjust total percentage to reflect the 1:2 yudane ratio (1 part flour, 2 parts water)
             // The yudane flour is 20% of total flour, and yudane water is 2x yudane flour.
             // So, for every 1 unit of main flour, we have 0.2 units of yudane flour and 0.4 units of yudane water.
@@ -414,6 +506,19 @@
             // Calculate total dough weight based on rounded ingredient values
             totalDoughWeight = flour + milk + yudaneFlour + yudaneWater + sugar + butter + salt + yeast;
 
+            // Cost calculation variables
+            const flourKg = flour / 1000;
+            const milkLiter = milk / 1000;
+
+            // Calculate ingredient costs
+            const flourCost = flourKg * flourPrice;
+            const milkCost = milkLiter * milkPrice;
+            const sugarCost = (sugar / 1000) * sugarPrice;
+            const butterCost = (butter / 1000) * butterPrice;
+            const saltCost = (salt / 1000) * saltPrice;
+            const yeastCost = (yeast / 1000) * yeastPrice;
+            const ingredientsCost = flourCost + milkCost + sugarCost + butterCost + saltCost + yeastCost;
+
             // Calculate totals
             const totalFlour = flour + yudaneFlour;
             const totalWater = yudaneWater + milk; // Assuming milk is part of the liquid
@@ -421,6 +526,10 @@
             
             // Update display
             document.getElementById('volume').textContent = volumeCm3.toFixed(2) + ' cm³';
+
+            // Calculate electricity cost
+            const electricityCost = (bakingTime / 60) * ovenPower * electricityPrice;
+
             document.getElementById('volumeLiters').textContent = volumeLiters.toFixed(2) + ' L';
             
             document.getElementById('flour').textContent = flour + ' g';
@@ -436,6 +545,11 @@
             document.getElementById('totalFlour').textContent = totalFlour.toFixed(1) + ' g';
             document.getElementById('totalWater').textContent = totalWater.toFixed(1) + ' g';
             document.getElementById('actualHydration').textContent = actualHydration.toFixed(1) + '%';
+
+            document.getElementById('ingredientsCost').textContent = '₺' + ingredientsCost.toFixed(2);
+            document.getElementById('electricityCost').textContent = '₺' + electricityCost.toFixed(2);
+            document.getElementById('totalCost').textContent = '₺' + (ingredientsCost + electricityCost).toFixed(2);
+
             
             // Update 3D cube with smooth animation
             const targetScale = { x: x, y: y, z: z };
@@ -564,7 +678,16 @@
             loadPresets();
         });
 
-        ['x', 'y', 'z', 'grPerLiter', 'density', 'hydration'].forEach(id => document.getElementById(id).addEventListener('input', calculateIngredients));
+        document.getElementById('showCost').addEventListener('change', function() {
+            const costSection = document.getElementById('costSection');
+            if (this.checked) {
+                costSection.style.display = 'flex';
+            } else {
+                costSection.style.display = 'none';
+            }
+        });
+
+        ['x', 'y', 'z', 'grPerLiter', 'density', 'hydration', 'flourPrice', 'milkPrice', 'sugarPrice', 'butterPrice', 'saltPrice', 'yeastPrice', 'electricityPrice', 'bakingTime', 'ovenPower'].forEach(id => document.getElementById(id).addEventListener('input', calculateIngredients));        
         document.getElementById('resetButton').addEventListener('click', resetToDefaults);
         
         init();
