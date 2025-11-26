@@ -119,6 +119,30 @@
             color: #f5576c;
             font-size: 0.9em;
         }
+
+        .ingredient-label-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative; /* For tooltip positioning */
+        }
+
+        .ingredient-label-group label {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .ingredient-label-group input[type=number] {
+            width: 60px;
+            padding: 4px 8px;
+            font-size: 0.9em;
+        }
+
+        .tooltip-icon {
+            cursor: help;
+            color: #aaa;
+        }
         
         .total-dough {
             background: #f5576c;
@@ -251,35 +275,60 @@
                 <h2 class="section-title">Ingredients (grams)</h2>
                 <div class="ingredients">
                     <div class="result-item">
-                        <span class="result-label">Flour (Main):</span>
+                        <div class="ingredient-label-group">
+                            <span class="result-label">Flour (Main):</span>
+                            <span class="tooltip-icon" title="Main flour is calculated as Total Flour minus Yudane Flour. Adjust 'Grams per Liter' or 'Density' to change total dough weight.">&#9432;</span>
+                        </div>
                         <span class="result-value" id="flour">0 g</span>
                     </div>
                     <div class="result-item">
-                        <span class="result-label">Milk (16.7%):</span>
+                        <div class="ingredient-label-group">
+                            <span class="result-label">Milk:</span>
+                            <span class="tooltip-icon" title="Milk is the remaining liquid after accounting for Yudane water. To change its amount, adjust the overall 'Hydration (%)'.">&#9432;</span>
+                        </div>
                         <span class="result-value" id="milk">0 g</span>
                     </div>
                     <div class="result-item">
-                        <span class="result-label">Yudane Flour (20%):</span>
+                        <div class="ingredient-label-group">
+                            <label for="yudaneFlourPercent">Yudane Flour (%):</label>
+                            <input type="number" id="yudaneFlourPercent" value="20" min="0" step="1">
+                        </div>
                         <span class="result-value" id="yudaneFlour">0 g</span>
                     </div>
                     <div class="result-item">
-                        <span class="result-label">Yudane Water (40%):</span>
+                        <div class="ingredient-label-group">
+                            <label for="yudaneWaterRatio">Yudane Water Ratio:</label>
+                            <input type="number" id="yudaneWaterRatio" value="2" min="0" step="0.1">
+                            <span class="tooltip-icon" title="Ratio of water to Yudane flour. E.g., a value of 2 means a 1:2 ratio (1 part flour, 2 parts water).">&#9432;</span>
+                        </div>
                         <span class="result-value" id="yudaneWater">0 g</span>
                     </div>
                     <div class="result-item">
-                        <span class="result-label">Sugar (6%):</span>
+                        <div class="ingredient-label-group">
+                            <label for="sugarPercent">Sugar (%):</label>
+                            <input type="number" id="sugarPercent" value="6" min="0" step="0.1">
+                        </div>
                         <span class="result-value" id="sugar">0 g</span>
                     </div>
                     <div class="result-item">
-                        <span class="result-label">Butter (5%):</span>
+                        <div class="ingredient-label-group">
+                            <label for="butterPercent">Butter (%):</label>
+                            <input type="number" id="butterPercent" value="5" min="0" step="0.1">
+                        </div>
                         <span class="result-value" id="butter">0 g</span>
                     </div>
                     <div class="result-item">
-                        <span class="result-label">Salt (1.7%):</span>
+                        <div class="ingredient-label-group">
+                            <label for="saltPercent">Salt (%):</label>
+                            <input type="number" id="saltPercent" value="1.7" min="0" step="0.1">
+                        </div>
                         <span class="result-value" id="salt">0 g</span>
                     </div>
                     <div class="result-item">
-                        <span class="result-label">Yeast (0.6%):</span>
+                        <div class="ingredient-label-group">
+                            <label for="yeastPercent">Yeast (%):</label>
+                            <input type="number" id="yeastPercent" value="0.6" min="0" step="0.1">
+                        </div>
                         <span class="result-value" id="yeast">0 g</span>
                     </div>
                     <div class="result-item total-dough">
@@ -448,6 +497,12 @@
                 grPerLiter: document.getElementById('grPerLiter').value,
                 density: document.getElementById('density').value,
                 hydration: document.getElementById('hydration').value,
+                sugarPercent: document.getElementById('sugarPercent').value,
+                butterPercent: document.getElementById('butterPercent').value,
+                saltPercent: document.getElementById('saltPercent').value,
+                yeastPercent: document.getElementById('yeastPercent').value,
+                yudaneFlourPercent: document.getElementById('yudaneFlourPercent').value,
+                yudaneWaterRatio: document.getElementById('yudaneWaterRatio').value,
             };
             localStorage.setItem('shokupanCalculatorState', JSON.stringify(state));
         }
@@ -463,20 +518,20 @@
             
             const grPerLiter = parseFloat(document.getElementById('grPerLiter').value) || 286;
             const density = parseFloat(document.getElementById('density').value) || 1.0;
-            const hydration = parseFloat(document.getElementById('hydration').value) || 70;
+            const hydration = parseFloat(document.getElementById('hydration').value) || 70.1;
 
             // Calculate total dough weight
             let totalDoughWeight = volumeLiters * grPerLiter * density;
             totalDoughWeight = Math.round(totalDoughWeight); // Round total dough weight first
 
             // Baker's percentages
-            const milkPercent = 0.167;
-            const yudaneFlourPercent = 0.20;
-            const sugarPercent = 0.06;
-            const butterPercent = 0.05;
-            const saltPercent = 0.017;
-            const yeastPercent = 0.006;
-
+            const yudaneFlourPercent = (parseFloat(document.getElementById('yudaneFlourPercent').value) || 0) / 100;
+            const sugarPercent = (parseFloat(document.getElementById('sugarPercent').value) || 0) / 100;
+            const butterPercent = (parseFloat(document.getElementById('butterPercent').value) || 0) / 100;
+            const saltPercent = (parseFloat(document.getElementById('saltPercent').value) || 0) / 100;
+            const yeastPercent = (parseFloat(document.getElementById('yeastPercent').value) || 0) / 100;
+            const yudaneWaterRatio = parseFloat(document.getElementById('yudaneWaterRatio').value) || 2;
+            
             // Get prices from input fields
             const flourPrice = parseFloat(document.getElementById('flourPrice').value) || 0;
             const milkPrice = parseFloat(document.getElementById('milkPrice').value) || 0;
@@ -500,7 +555,7 @@
 
             // Calculate total liquids based on desired hydration, then determine milk and yudane water
             const totalWater = Math.round(totalFlour * (hydration / 100));
-            const yudaneWater = Math.round(yudaneFlour * 2); // Yudane water is twice the yudane flour
+            const yudaneWater = Math.round(yudaneFlour * yudaneWaterRatio); // Yudane water based on ratio
             const milk = Math.max(0, totalWater - yudaneWater); // Milk is the remaining liquid
 
             // Calculate other ingredients
@@ -607,6 +662,12 @@
                 document.getElementById('grPerLiter').value = savedState.grPerLiter;
                 document.getElementById('density').value = savedState.density;
                 document.getElementById('hydration').value = savedState.hydration;
+                document.getElementById('sugarPercent').value = savedState.sugarPercent || "6";
+                document.getElementById('butterPercent').value = savedState.butterPercent || "5";
+                document.getElementById('saltPercent').value = savedState.saltPercent || "1.7";
+                document.getElementById('yeastPercent').value = savedState.yeastPercent || "0.6";
+                document.getElementById('yudaneFlourPercent').value = savedState.yudaneFlourPercent || "20";
+                document.getElementById('yudaneWaterRatio').value = savedState.yudaneWaterRatio || "2";
             }
             calculateIngredients();
         }
@@ -618,6 +679,12 @@
             document.getElementById('grPerLiter').value = "286";
             document.getElementById('density').value = "1.0";
             document.getElementById('hydration').value = "70";
+            document.getElementById('sugarPercent').value = "6";
+            document.getElementById('butterPercent').value = "5";
+            document.getElementById('saltPercent').value = "1.7";
+            document.getElementById('yeastPercent').value = "0.6";
+            document.getElementById('yudaneFlourPercent').value = "20";
+            document.getElementById('yudaneWaterRatio').value = "2";
             localStorage.removeItem('shokupanCalculatorState');
             calculateIngredients();
         }
@@ -691,7 +758,7 @@
             }
         });
 
-        ['x', 'y', 'z', 'grPerLiter', 'density', 'hydration', 'flourPrice', 'milkPrice', 'sugarPrice', 'butterPrice', 'saltPrice', 'yeastPrice', 'electricityPrice', 'bakingTime', 'ovenPower'].forEach(id => document.getElementById(id).addEventListener('input', calculateIngredients));        
+        ['x', 'y', 'z', 'grPerLiter', 'density', 'hydration', 'sugarPercent', 'butterPercent', 'saltPercent', 'yeastPercent', 'yudaneFlourPercent', 'yudaneWaterRatio', 'flourPrice', 'milkPrice', 'sugarPrice', 'butterPrice', 'saltPrice', 'yeastPrice', 'electricityPrice', 'bakingTime', 'ovenPower'].forEach(id => document.getElementById(id).addEventListener('input', calculateIngredients));        
         document.getElementById('resetButton').addEventListener('click', resetToDefaults);
         
         init();
