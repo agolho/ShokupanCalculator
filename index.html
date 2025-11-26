@@ -199,6 +199,10 @@
                     <input type="number" id="hydration" value="70" min="1" step="1">
                 </div>
                 
+                <div class="input-group">
+                    <button id="resetButton" style="padding: 10px; border-radius: 8px; border: none; background: #6c757d; color: white; cursor: pointer; font-size: 0.9em; margin-top: 10px;">Reset to Defaults</button>
+                </div>
+
                 <div class="results">
                     <div class="result-item">
                         <span class="result-label">Pan Volume:</span>
@@ -215,6 +219,17 @@
             <div class="section">
                 <h2 class="section-title">Pan Visualization</h2>
                 <div id="canvas-container"></div>
+
+                <h2 class="section-title" style="margin-top: 20px;">Presets</h2>
+                <div class="input-group">
+                    <label for="presetName">Preset Name</label>
+                    <input type="text" id="presetName" placeholder="e.g., 2L Dense Loaf">
+                </div>
+                <div class="input-group" style="flex-direction: row; gap: 10px;">
+                    <button id="savePreset" style="flex: 1; padding: 10px; border-radius: 8px; border: none; background: #28a745; color: white; cursor: pointer;">Save</button>
+                    <select id="presetSelect" style="flex: 2; padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0;"></select>
+                    <button id="deletePreset" style="flex: 1; padding: 10px; border-radius: 8px; border: none; background: #dc3545; color: white; cursor: pointer;">Delete</button>
+                </div>
             </div>
             
             <!-- Ingredients -->
@@ -286,16 +301,17 @@
             
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0xf5f7fa);
-            
-            camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+
+            const { width, height } = container.getBoundingClientRect();
+            camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
             camera.position.set(15, 15, 15);
             camera.lookAt(0, 0, 0);
             
             renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(400, 400);
+            renderer.setSize(width, height);
             container.appendChild(renderer.domElement);
             
-            const geometry = new THREE.BoxGeometry(20, 10, 10);
+            const geometry = new THREE.BoxGeometry(1, 1, 1); // Start with a placeholder
             
             // Add rounded edges to make it look more like a Pullman pan
             const material = new THREE.MeshPhongMaterial({ 
@@ -324,6 +340,16 @@
             directionalLight.position.set(10, 10, 10);
             scene.add(directionalLight);
             
+            // Handle responsive canvas
+            window.addEventListener('resize', () => {
+                const { width, height } = container.getBoundingClientRect();
+                renderer.setSize(width, height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            });
+
+            loadState();
+            loadPresets();
             animate();
         }
         
@@ -333,56 +359,79 @@
             renderer.render(scene, camera);
         }
         
+        function saveState() {
+            const state = {
+                x: document.getElementById('x').value,
+                y: document.getElementById('y').value,
+                z: document.getElementById('z').value,
+                grPerLiter: document.getElementById('grPerLiter').value,
+                density: document.getElementById('density').value,
+                hydration: document.getElementById('hydration').value,
+            };
+            localStorage.setItem('shokupanCalculatorState', JSON.stringify(state));
+        }
+
         function calculateIngredients() {
             const x = parseFloat(document.getElementById('x').value) || 1;
             const y = parseFloat(document.getElementById('y').value) || 1;
             const z = parseFloat(document.getElementById('z').value) || 1;
-            const grPerLiter = parseFloat(document.getElementById('grPerLiter').value) || 450;
-            const density = parseFloat(document.getElementById('density').value) || 1.0;
-            const hydration = parseFloat(document.getElementById('hydration').value) || 70;
             
             // Calculate volume in cm³ and liters
             const volumeCm3 = x * y * z;
             const volumeLiters = volumeCm3 / 1000;
             
+            const grPerLiter = parseFloat(document.getElementById('grPerLiter').value) || 286;
+            const density = parseFloat(document.getElementById('density').value) || 1.1;
+            const hydration = parseFloat(document.getElementById('hydration').value) || 70;
+
             // Calculate total dough weight
-            const totalDoughWeight = volumeLiters * grPerLiter * density;
+            let totalDoughWeight = volumeLiters * grPerLiter * density;
+            totalDoughWeight = Math.round(totalDoughWeight); // Round total dough weight first
+
+            // Baker's percentages
+            const milkPercent = 0.167;
+            const yudaneFlourPercent = 0.20;
+            const sugarPercent = 0.06;
+            const butterPercent = 0.05;
+            const saltPercent = 0.017;
+            const yeastPercent = 0.006;
+
+            // Adjust total percentage to reflect the 1:2 yudane ratio (1 part flour, 2 parts water)
+            // The yudane flour is 20% of total flour, and yudane water is 2x yudane flour.
+            // So, for every 1 unit of main flour, we have 0.2 units of yudane flour and 0.4 units of yudane water.
+            const totalPercentage = 1 + milkPercent + yudaneFlourPercent + (yudaneFlourPercent * 2) + sugarPercent + butterPercent + saltPercent + yeastPercent;
+            const flourBase = totalDoughWeight / totalPercentage;
+
+            const flour = Math.round(flourBase * (1 - yudaneFlourPercent));
+            const milk = Math.round(flourBase * milkPercent);
+            const yudaneFlour = Math.round(flourBase * yudaneFlourPercent);
+            const yudaneWater = Math.round(yudaneFlour * 2); // Calculate yudane water based on rounded yudane flour
+            const sugar = Math.round(flourBase * sugarPercent);
+            const butter = Math.round(flourBase * butterPercent);
+            const salt = Math.round(flourBase * saltPercent);
+            const yeast = Math.round(flourBase * yeastPercent);
             
-            // Calculate flour percentage (100%)
-            // Total percentages: 100 (flour) + 16.7 (milk) + 20 (yudane flour) + 40 (yudane water) + 6 (sugar) + 5 (butter) + 1.7 (salt) + 0.6 (yeast)
-            const totalPercentage = 100 + 16.7 + 20 + 40 + 6 + 5 + 1.7 + 0.6;
-            
-            // Flour is the base (100%)
-            const flourBase = totalDoughWeight / totalPercentage * 100;
-            
-            // Calculate each ingredient based on flour percentage
-            const flour = flourBase;
-            const milk = flourBase * 0.167;
-            const yudaneFlour = flourBase * 0.20;
-            const yudaneWater = flourBase * 0.40;
-            const sugar = flourBase * 0.06;
-            const butter = flourBase * 0.05;
-            const salt = flourBase * 0.017;
-            const yeast = flourBase * 0.006;
-            
+            // Calculate total dough weight based on rounded ingredient values
+            totalDoughWeight = flour + milk + yudaneFlour + yudaneWater + sugar + butter + salt + yeast;
+
             // Calculate totals
             const totalFlour = flour + yudaneFlour;
-            const totalWater = yudaneWater; // Only yudane water in this recipe
+            const totalWater = yudaneWater + milk; // Assuming milk is part of the liquid
             const actualHydration = (totalWater / totalFlour) * 100;
             
             // Update display
             document.getElementById('volume').textContent = volumeCm3.toFixed(2) + ' cm³';
             document.getElementById('volumeLiters').textContent = volumeLiters.toFixed(2) + ' L';
             
-            document.getElementById('flour').textContent = flour.toFixed(1) + ' g';
-            document.getElementById('milk').textContent = milk.toFixed(1) + ' g';
-            document.getElementById('yudaneFlour').textContent = yudaneFlour.toFixed(1) + ' g';
-            document.getElementById('yudaneWater').textContent = yudaneWater.toFixed(1) + ' g';
-            document.getElementById('sugar').textContent = sugar.toFixed(1) + ' g';
-            document.getElementById('butter').textContent = butter.toFixed(1) + ' g';
-            document.getElementById('salt').textContent = salt.toFixed(1) + ' g';
-            document.getElementById('yeast').textContent = yeast.toFixed(1) + ' g';
-            document.getElementById('totalDough').textContent = totalDoughWeight.toFixed(1) + ' g';
+            document.getElementById('flour').textContent = flour + ' g';
+            document.getElementById('milk').textContent = milk + ' g';
+            document.getElementById('yudaneFlour').textContent = yudaneFlour + ' g';
+            document.getElementById('yudaneWater').textContent = yudaneWater + ' g';
+            document.getElementById('sugar').textContent = sugar + ' g';
+            document.getElementById('butter').textContent = butter + ' g';
+            document.getElementById('salt').textContent = salt + ' g';
+            document.getElementById('yeast').textContent = yeast + ' g';
+            document.getElementById('totalDough').textContent = totalDoughWeight + ' g';
             
             document.getElementById('totalFlour').textContent = totalFlour.toFixed(1) + ' g';
             document.getElementById('totalWater').textContent = totalWater.toFixed(1) + ' g';
@@ -427,17 +476,98 @@
             const distance = maxDim * 2.5;
             camera.position.set(distance, distance, distance);
             camera.lookAt(0, 0, 0);
+
+            saveState();
         }
-        
-        document.getElementById('x').addEventListener('input', calculateIngredients);
-        document.getElementById('y').addEventListener('input', calculateIngredients);
-        document.getElementById('z').addEventListener('input', calculateIngredients);
-        document.getElementById('grPerLiter').addEventListener('input', calculateIngredients);
-        document.getElementById('density').addEventListener('input', calculateIngredients);
-        document.getElementById('hydration').addEventListener('input', calculateIngredients);
+
+        function loadState(state) {
+            const savedState = state || JSON.parse(localStorage.getItem('shokupanCalculatorState'));
+            if (savedState) {
+                document.getElementById('x').value = savedState.x;
+                document.getElementById('y').value = savedState.y;
+                document.getElementById('z').value = savedState.z;
+                document.getElementById('grPerLiter').value = savedState.grPerLiter;
+                document.getElementById('density').value = savedState.density;
+                document.getElementById('hydration').value = savedState.hydration;
+            }
+            calculateIngredients();
+        }
+
+        function resetToDefaults() {
+            document.getElementById('x').value = "20";
+            document.getElementById('y').value = "10";
+            document.getElementById('z').value = "10";
+            document.getElementById('grPerLiter').value = "286";
+            document.getElementById('density').value = "1.0";
+            document.getElementById('hydration').value = "70";
+            localStorage.removeItem('shokupanCalculatorState');
+            calculateIngredients();
+        }
+
+        function getPresets() {
+            return JSON.parse(localStorage.getItem('shokupanPresets')) || [];
+        }
+
+        function savePresets(presets) {
+            localStorage.setItem('shokupanPresets', JSON.stringify(presets));
+        }
+
+        function loadPresets() {
+            const presets = getPresets();
+            const select = document.getElementById('presetSelect');
+            select.innerHTML = '<option value="">-- Load Preset --</option>';
+            presets.forEach((preset, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = preset.name;
+                select.appendChild(option);
+            });
+        }
+
+        document.getElementById('savePreset').addEventListener('click', () => {
+            const name = document.getElementById('presetName').value.trim();
+            if (!name) {
+                alert('Please enter a name for the preset.');
+                return;
+            }
+            const presets = getPresets();
+            const newPreset = {
+                name: name,
+                state: JSON.parse(localStorage.getItem('shokupanCalculatorState'))
+            };
+            presets.push(newPreset);
+            savePresets(presets);
+            loadPresets();
+            document.getElementById('presetName').value = '';
+        });
+
+        document.getElementById('presetSelect').addEventListener('change', (e) => {
+            const index = e.target.value;
+            if (index === "") return;
+            const presets = getPresets();
+            const selectedPreset = presets[parseInt(index)];
+            if (selectedPreset) {
+                loadState(selectedPreset.state);
+            }
+        });
+
+        document.getElementById('deletePreset').addEventListener('click', () => {
+            const select = document.getElementById('presetSelect');
+            const index = select.value;
+            if (index === "") {
+                alert('Please select a preset to delete.');
+                return;
+            }
+            let presets = getPresets();
+            presets.splice(parseInt(index), 1);
+            savePresets(presets);
+            loadPresets();
+        });
+
+        ['x', 'y', 'z', 'grPerLiter', 'density', 'hydration'].forEach(id => document.getElementById(id).addEventListener('input', calculateIngredients));
+        document.getElementById('resetButton').addEventListener('click', resetToDefaults);
         
         init();
-        calculateIngredients();
     </script>
 </body>
 </html>
