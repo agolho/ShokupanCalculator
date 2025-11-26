@@ -462,7 +462,7 @@
             const volumeLiters = volumeCm3 / 1000;
             
             const grPerLiter = parseFloat(document.getElementById('grPerLiter').value) || 286;
-            const density = parseFloat(document.getElementById('density').value) || 1.1;
+            const density = parseFloat(document.getElementById('density').value) || 1.0;
             const hydration = parseFloat(document.getElementById('hydration').value) || 70;
 
             // Calculate total dough weight
@@ -489,22 +489,28 @@
             const ovenPower = parseFloat(document.getElementById('ovenPower').value) || 0;
 
             // Adjust total percentage to reflect the 1:2 yudane ratio (1 part flour, 2 parts water)
-            // The yudane flour is 20% of total flour, and yudane water is 2x yudane flour.
-            // So, for every 1 unit of main flour, we have 0.2 units of yudane flour and 0.4 units of yudane water.
-            const totalPercentage = 1 + milkPercent + yudaneFlourPercent + (yudaneFlourPercent * 2) + sugarPercent + butterPercent + saltPercent + yeastPercent;
+            // The total percentage is the sum of all ingredients relative to the total flour weight (which is 100% or 1).
+            const totalPercentage = 1 + (hydration / 100) + sugarPercent + butterPercent + saltPercent + yeastPercent;
             const flourBase = totalDoughWeight / totalPercentage;
 
-            const flour = Math.round(flourBase * (1 - yudaneFlourPercent));
-            const milk = Math.round(flourBase * milkPercent);
+            // Calculate total flour and its components
             const yudaneFlour = Math.round(flourBase * yudaneFlourPercent);
-            const yudaneWater = Math.round(yudaneFlour * 2); // Calculate yudane water based on rounded yudane flour
+            const flour = Math.round(flourBase * (1 - yudaneFlourPercent)); // Main flour
+            const totalFlour = flour + yudaneFlour;
+
+            // Calculate total liquids based on desired hydration, then determine milk and yudane water
+            const totalWater = Math.round(totalFlour * (hydration / 100));
+            const yudaneWater = Math.round(yudaneFlour * 2); // Yudane water is twice the yudane flour
+            const milk = Math.max(0, totalWater - yudaneWater); // Milk is the remaining liquid
+
+            // Calculate other ingredients
             const sugar = Math.round(flourBase * sugarPercent);
             const butter = Math.round(flourBase * butterPercent);
             const salt = Math.round(flourBase * saltPercent);
             const yeast = Math.round(flourBase * yeastPercent);
             
             // Calculate total dough weight based on rounded ingredient values
-            totalDoughWeight = flour + milk + yudaneFlour + yudaneWater + sugar + butter + salt + yeast;
+            totalDoughWeight = totalFlour + totalWater + sugar + butter + salt + yeast;
 
             // Cost calculation variables
             const flourKg = flour / 1000;
@@ -520,9 +526,7 @@
             const ingredientsCost = flourCost + milkCost + sugarCost + butterCost + saltCost + yeastCost;
 
             // Calculate totals
-            const totalFlour = flour + yudaneFlour;
-            const totalWater = yudaneWater + milk; // Assuming milk is part of the liquid
-            const actualHydration = (totalWater / totalFlour) * 100;
+            const actualHydration = totalFlour > 0 ? (totalWater / totalFlour) * 100 : 0;
             
             // Update display
             document.getElementById('volume').textContent = volumeCm3.toFixed(2) + ' cm³';
