@@ -424,9 +424,8 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script>
-        let scene, camera, renderer, loafModel;
+        let scene, camera, renderer, cube;
         function init() {
             const container = document.getElementById('canvas-container');
             
@@ -435,36 +434,35 @@
 
             const { width, height } = container.getBoundingClientRect();
             camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-            camera.position.set(30, 30, 30);
+            camera.position.set(15, 15, 15);
             camera.lookAt(0, 0, 0);
             
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(width, height);
             container.appendChild(renderer.domElement);
             
-            const loader = new THREE.GLTFLoader();
-            loader.load(
-                'loaf.glb',
-                (gltf) => {
-                    loafModel = gltf.scene;
-
-                    // Apply a nice material to the loaded model
-                    const material = new THREE.MeshPhongMaterial({ 
-                        color: 0xd4af37,
-                        shininess: 150,
-                        specular: 0xffd700
-                    });
-
-                    loafModel.traverse((child) => {
-                        if (child.isMesh) {
-                            child.material = material;
-                        }
-                    });
-
-                    scene.add(loafModel);
-                }
-            );
-
+            const geometry = new THREE.BoxGeometry(1, 1, 1); // Start with a placeholder
+            
+            // Add rounded edges to make it look more like a Pullman pan
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0xd4af37,
+                metalness: 0.8,
+                transparent: false,
+                opacity: 1,
+                shininess: 150,
+                specular: 0xffd700
+            });
+            cube = new THREE.Mesh(geometry, material);
+            
+            // Position cube so it sits like a loaf pan
+            cube.rotation.x = Math.PI * 0.05;
+            scene.add(cube);
+            
+            const edges = new THREE.EdgesGeometry(geometry);
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 });
+            const wireframe = new THREE.LineSegments(edges, lineMaterial);
+            cube.add(wireframe);
+            
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
             
@@ -487,9 +485,7 @@
         
         function animate() {
             requestAnimationFrame(animate);
-            if (loafModel) {
-                loafModel.rotation.y += 0.005;
-            }
+            cube.rotation.y += 0.005;
             renderer.render(scene, camera);
         }
         
@@ -613,12 +609,46 @@
             document.getElementById('electricityCost').textContent = '₺' + electricityCost.toFixed(2);
             document.getElementById('totalCost').textContent = '₺' + (ingredientsCost + electricityCost).toFixed(2);
 
-            // Update 3D model scale
-            if (loafModel) {
-                // Scale the model to match the pan dimensions.
-                // This assumes the base model is 1x1x1 unit.
-                loafModel.scale.set(x, y, z);
+            
+            // Update 3D cube with smooth animation
+            const targetScale = { x: x, y: y, z: z };
+            const currentScale = { 
+                x: cube.geometry.parameters.width,
+                y: cube.geometry.parameters.height,
+                z: cube.geometry.parameters.depth
+            };
+            
+            // Animate the transition
+            let progress = 0;
+            const animationDuration = 300; // milliseconds
+            const startTime = Date.now();
+            
+            function animateResize() {
+                progress = Math.min((Date.now() - startTime) / animationDuration, 1);
+                const easeProgress = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+                
+                const newX = currentScale.x + (targetScale.x - currentScale.x) * easeProgress;
+                const newY = currentScale.y + (targetScale.y - currentScale.y) * easeProgress;
+                const newZ = currentScale.z + (targetScale.z - currentScale.z) * easeProgress;
+                
+                cube.geometry.dispose();
+                cube.geometry = new THREE.BoxGeometry(newX, newY, newZ);
+                
+                const edges = new THREE.EdgesGeometry(cube.geometry);
+                cube.children[0].geometry.dispose();
+                cube.children[0].geometry = edges;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateResize);
+                }
             }
+            
+            animateResize();
+            
+            const maxDim = Math.max(x, y, z);
+            const distance = maxDim * 2.5;
+            camera.position.set(distance, distance, distance);
+            camera.lookAt(0, 0, 0);
 
             saveState();
         }
@@ -731,7 +761,7 @@
         ['x', 'y', 'z', 'grPerLiter', 'density', 'hydration', 'sugarPercent', 'butterPercent', 'saltPercent', 'yeastPercent', 'yudaneFlourPercent', 'yudaneWaterRatio', 'flourPrice', 'milkPrice', 'sugarPrice', 'butterPrice', 'saltPrice', 'yeastPrice', 'electricityPrice', 'bakingTime', 'ovenPower'].forEach(id => document.getElementById(id).addEventListener('input', calculateIngredients));        
         document.getElementById('resetButton').addEventListener('click', resetToDefaults);
         
-        window.onload = init;
+        init();
     </script>
 </body>
 </html>
