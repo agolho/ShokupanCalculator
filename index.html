@@ -165,6 +165,13 @@
             height: 400px;
         }
         
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
         canvas {
             display: block;
             width: 100% !important;
@@ -220,6 +227,11 @@
                     <input type="number" id="z" value="10" min="0.1" step="0.1">
                 </div>
                 
+                <div class="input-group">
+                    <label for="directLiters">Volume (Liters)</label>
+                    <input type="number" id="directLiters" value="2.0" min="0.01" step="0.01">
+                </div>
+
                 <h2 class="section-title">Dough Parameters</h2>
                 
                 <div class="input-group">
@@ -246,10 +258,6 @@
                         <span class="result-label">Pan Volume:</span>
                         <span class="result-value" id="volume">2000 cm³</span>
                     </div>
-                    <div class="result-item">
-                        <span class="result-label">Volume (Liters):</span>
-                        <span class="result-value" id="volumeLiters">2.00 L</span>
-                    </div>
                 </div>
             </div>
             
@@ -258,7 +266,15 @@
                 <h2 class="section-title">Pan Visualization</h2>
                 <div id="canvas-container"></div>
 
-                <h2 class="section-title" style="margin-top: 20px;">Presets</h2>
+                <h2 class="section-title" style="margin-top: 20px;">Built-in Presets</h2>
+                <div class="preset-buttons">
+                    <button id="preset-btn-0" style="padding: 10px; border-radius: 8px; border: none; background: #17a2b8; color: white; cursor: pointer;">Buttery</button>
+                    <button id="preset-btn-1" style="padding: 10px; border-radius: 8px; border: none; background: #17a2b8; color: white; cursor: pointer;">Classic</button>
+                    <button id="preset-btn-2" style="padding: 10px; border-radius: 8px; border: none; background: #17a2b8; color: white; cursor: pointer;">Whole Wheat</button>
+                    <button id="preset-btn-3" style="padding: 10px; border-radius: 8px; border: none; background: #17a2b8; color: white; cursor: pointer;">Dense Whole Wheat</button>
+                </div>
+
+                <h2 class="section-title">Custom Presets</h2>
                 <div class="input-group">
                     <label for="presetName">Preset Name</label>
                     <input type="text" id="presetName" placeholder="e.g., 2L Dense Loaf">
@@ -267,6 +283,11 @@
                     <button id="savePreset" style="flex: 1; padding: 10px; border-radius: 8px; border: none; background: #28a745; color: white; cursor: pointer;">Save</button>
                     <select id="presetSelect" style="flex: 2; padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0;"></select>
                     <button id="deletePreset" style="flex: 1; padding: 10px; border-radius: 8px; border: none; background: #dc3545; color: white; cursor: pointer;">Delete</button>
+                </div>
+
+                <div class="input-group" style="margin-top: 20px;">
+                    <h2 class="section-title">Share</h2>
+                    <button id="shareUrl" style="padding: 10px; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer;">Copy Shareable URL</button>
                 </div>
             </div>
             
@@ -493,6 +514,25 @@
             animate();
         }
         
+        function generateShareUrl() {
+            const state = {
+                x: document.getElementById('x').value,
+                y: document.getElementById('y').value,
+                z: document.getElementById('z').value,
+                grPerLiter: document.getElementById('grPerLiter').value,
+                density: document.getElementById('density').value,
+                hydration: document.getElementById('hydration').value,
+                sugarPercent: document.getElementById('sugarPercent').value,
+                butterPercent: document.getElementById('butterPercent').value,
+                saltPercent: document.getElementById('saltPercent').value,
+                yeastPercent: document.getElementById('yeastPercent').value,
+                yudaneFlourPercent: document.getElementById('yudaneFlourPercent').value,
+                yudaneWaterRatio: document.getElementById('yudaneWaterRatio').value,
+            };
+            const encodedState = btoa(JSON.stringify(state));
+            return `${window.location.origin}${window.location.pathname}?recipe=${encodedState}`;
+        }
+
         function animate() {
             requestAnimationFrame(animate);
             cube.rotation.y += 0.005;
@@ -502,6 +542,7 @@
         function saveState() {
             const state = {
                 x: document.getElementById('x').value,
+                directLiters: document.getElementById('directLiters').value,
                 y: document.getElementById('y').value,
                 z: document.getElementById('z').value,
                 grPerLiter: document.getElementById('grPerLiter').value,
@@ -517,16 +558,69 @@
             localStorage.setItem('shokupanCalculatorState', JSON.stringify(state));
         }
 
+        const BUILT_IN_PRESETS = [
+            {
+                name: "Buttery Puffy Shokupan",
+                state: {
+                    grPerLiter: "275", density: "1.01", hydration: "70",
+                    sugarPercent: "6", butterPercent: "6", saltPercent: "1.7",
+                    yeastPercent: "0.8", yudaneFlourPercent: "20", yudaneWaterRatio: "2"
+                }
+            },
+            {
+                name: "Classic White Shokupan",
+                state: {
+                    grPerLiter: "286", density: "1.01", hydration: "70",
+                    sugarPercent: "6", butterPercent: "5", saltPercent: "1.7",
+                    yeastPercent: "0.6", yudaneFlourPercent: "20", yudaneWaterRatio: "2"
+                }
+            },
+            {
+                name: "Whole Wheat",
+                state: {
+                    grPerLiter: "290", density: "1.03", hydration: "80",
+                    sugarPercent: "8", butterPercent: "6", saltPercent: "1.8",
+                    yeastPercent: "0.7", yudaneFlourPercent: "25", yudaneWaterRatio: "2"
+                }
+            },
+            {
+                name: "Dense Whole Wheat",
+                state: {
+                    grPerLiter: "310", density: "1.03", hydration: "80",
+                    sugarPercent: "8", butterPercent: "6", saltPercent: "1.8",
+                    yeastPercent: "0.7", yudaneFlourPercent: "25", yudaneWaterRatio: "2"
+                }
+            }
+        ];
+
         function calculateIngredients() {
-            const x = parseFloat(document.getElementById('x').value) || 1;
-            const y = parseFloat(document.getElementById('y').value) || 1;
-            const z = parseFloat(document.getElementById('z').value) || 1;
-            
+            let x = parseFloat(document.getElementById('x').value) || 1;
+            let y = parseFloat(document.getElementById('y').value) || 1;
+            let z = parseFloat(document.getElementById('z').value) || 1;
+            const directLitersInput = document.getElementById('directLiters');
+
+            // If user changed the liters input, recalculate x, y, z to match
+            if (document.activeElement.id === 'directLiters') {
+                const newLiters = parseFloat(directLitersInput.value) || 0;
+                const currentVolumeCm3 = x * y * z;
+                const newVolumeCm3 = newLiters * 1000;
+
+                if (currentVolumeCm3 > 0) {
+                    const scaleFactor = Math.cbrt(newVolumeCm3 / currentVolumeCm3);
+                    x *= scaleFactor;
+                    y *= scaleFactor;
+                    z *= scaleFactor;
+                    document.getElementById('x').value = x.toFixed(2);
+                    document.getElementById('y').value = y.toFixed(2);
+                    document.getElementById('z').value = z.toFixed(2);
+                }
+            }
+
             // Calculate volume in cm³ and liters
             const volumeCm3 = x * y * z;
             const volumeLiters = volumeCm3 / 1000;
-            
-            const grPerLiter = parseFloat(document.getElementById('grPerLiter').value) || 275;
+
+            const grPerLiter = parseFloat(document.getElementById('grPerLiter').value) || 286;
             const density = parseFloat(document.getElementById('density').value) || 1.0;
             const hydration = parseFloat(document.getElementById('hydration').value) || 70.1;
 
@@ -543,7 +637,7 @@
             const yudaneWaterRatio = parseFloat(document.getElementById('yudaneWaterRatio').value) || 2;
             
             // Get prices from input fields
-            const flourPrice = parseFloat(document.getElementById('flourPrice').value) || 0;
+            const flourPrice = parseFloat(document.getElementById('flourPrice').value) || 36;
             const milkPrice = parseFloat(document.getElementById('milkPrice').value) || 0;
             const sugarPrice = parseFloat(document.getElementById('sugarPrice').value) || 0;
             const butterPrice = parseFloat(document.getElementById('butterPrice').value) || 0;
@@ -554,7 +648,7 @@
             const ovenPower = parseFloat(document.getElementById('ovenPower').value) || 0;
 
             // Adjust total percentage to reflect the 1:2 yudane ratio (1 part flour, 2 parts water)
-            // The total percentage is the sum of all ingredients relative to the total flour weight (which is 100% or 1).
+            // The total percentage is the sum of all ingredients relative to the total flour weight (which is 100% or 1). This is used to find the flour amount from the total dough weight.
             const totalPercentage = 1 + (hydration / 100) + sugarPercent + butterPercent + saltPercent + yeastPercent;
             const flourBase = totalDoughWeight / totalPercentage;
 
@@ -595,14 +689,18 @@
             
             // Update display
             document.getElementById('volume').textContent = volumeCm3.toFixed(2) + ' cm³';
+            
+            // Update the directLiters input if it wasn't the source of the change
+            if (['x', 'y', 'z'].includes(document.activeElement.id)) {
+                directLitersInput.value = volumeLiters.toFixed(2);
+            }
 
             // Calculate electricity cost
             const electricityCost = (bakingTime / 60) * ovenPower * electricityPrice;
 
-            document.getElementById('volumeLiters').textContent = volumeLiters.toFixed(2) + ' L';
-            
             document.getElementById('flour').textContent = flour + ' g';
             document.getElementById('milk').textContent = milk + ' g';
+
             document.getElementById('yudaneFlour').textContent = yudaneFlour + ' g';
             document.getElementById('yudaneWater').textContent = yudaneWater + ' g';
             document.getElementById('sugar').textContent = sugar + ' g';
@@ -664,21 +762,43 @@
         }
 
         function loadState(state) {
-            const savedState = state || JSON.parse(localStorage.getItem('shokupanCalculatorState'));
-            if (savedState) {
+            let savedState = state;
+
+            // Check for URL parameters first
+            const urlParams = new URLSearchParams(window.location.search);
+            const recipeParam = urlParams.get('recipe');
+            if (recipeParam) {
+                try {
+                    savedState = JSON.parse(atob(recipeParam));
+                } catch (e) { console.error("Failed to parse recipe from URL", e); }
+            }
+
+            // If no state from URL or preset, try localStorage
+            if (!savedState) {
+                savedState = JSON.parse(localStorage.getItem('shokupanCalculatorState'));
+            }
+
+            if (!savedState) {
+                calculateIngredients();
+                return;
+            }
+
+            // If loading a full state (like from localStorage on page load), update everything
+            if (savedState.x) {
                 document.getElementById('x').value = savedState.x;
                 document.getElementById('y').value = savedState.y;
                 document.getElementById('z').value = savedState.z;
-                document.getElementById('grPerLiter').value = savedState.grPerLiter;
-                document.getElementById('density').value = savedState.density;
-                document.getElementById('hydration').value = savedState.hydration;
-                document.getElementById('sugarPercent').value = savedState.sugarPercent || "6";
-                document.getElementById('butterPercent').value = savedState.butterPercent || "5";
-                document.getElementById('saltPercent').value = savedState.saltPercent || "1.7";
-                document.getElementById('yeastPercent').value = savedState.yeastPercent || "0.6";
-                document.getElementById('yudaneFlourPercent').value = savedState.yudaneFlourPercent || "20";
-                document.getElementById('yudaneWaterRatio').value = savedState.yudaneWaterRatio || "2";
+                document.getElementById('directLiters').value = savedState.directLiters || (savedState.x * savedState.y * savedState.z / 1000).toFixed(2);
             }
+
+            // Update only the parameters present in the state (useful for presets and localStorage)
+            const fieldsToUpdate = ['grPerLiter', 'density', 'hydration', 'sugarPercent', 'butterPercent', 'saltPercent', 'yeastPercent', 'yudaneFlourPercent', 'yudaneWaterRatio'];
+            fieldsToUpdate.forEach(field => {
+                if (savedState[field]) {
+                    document.getElementById(field).value = savedState[field];
+                }
+            });
+
             calculateIngredients();
         }
 
@@ -686,6 +806,7 @@
             document.getElementById('x').value = "20";
             document.getElementById('y').value = "10";
             document.getElementById('z').value = "10";
+            document.getElementById('directLiters').value = "2.00";
             document.getElementById('grPerLiter').value = "286";
             document.getElementById('density').value = "1.0";
             document.getElementById('hydration').value = "70";
@@ -710,13 +831,21 @@
         function loadPresets() {
             const presets = getPresets();
             const select = document.getElementById('presetSelect');
-            select.innerHTML = '<option value="">-- Load Preset --</option>';
-            presets.forEach((preset, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = preset.name;
-                select.appendChild(option);
-            });
+            select.innerHTML = '<option value="">-- Load Custom Preset --</option>';
+
+            // Add custom presets
+            const customPresets = getPresets();
+            if (customPresets.length > 0) {
+                const customGroup = document.createElement('optgroup');
+                customGroup.label = 'My Presets';
+                customPresets.forEach((preset, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = preset.name;
+                    customGroup.appendChild(option);
+                });
+                select.appendChild(customGroup);
+            }
         }
 
         document.getElementById('savePreset').addEventListener('click', () => {
@@ -726,9 +855,20 @@
                 return;
             }
             const presets = getPresets();
+            // Create a state object with only the recipe parameters, not dimensions
             const newPreset = {
                 name: name,
-                state: JSON.parse(localStorage.getItem('shokupanCalculatorState'))
+                state: {
+                    grPerLiter: document.getElementById('grPerLiter').value,
+                    density: document.getElementById('density').value,
+                    hydration: document.getElementById('hydration').value,
+                    sugarPercent: document.getElementById('sugarPercent').value,
+                    butterPercent: document.getElementById('butterPercent').value,
+                    saltPercent: document.getElementById('saltPercent').value,
+                    yeastPercent: document.getElementById('yeastPercent').value,
+                    yudaneFlourPercent: document.getElementById('yudaneFlourPercent').value,
+                    yudaneWaterRatio: document.getElementById('yudaneWaterRatio').value,
+                }
             };
             presets.push(newPreset);
             savePresets(presets);
@@ -737,24 +877,26 @@
         });
 
         document.getElementById('presetSelect').addEventListener('change', (e) => {
-            const index = e.target.value;
-            if (index === "") return;
-            const presets = getPresets();
-            const selectedPreset = presets[parseInt(index)];
-            if (selectedPreset) {
-                loadState(selectedPreset.state);
+            const value = e.target.value;
+            if (value === "") return;
+
+            const index = parseInt(value);
+            const customPresets = getPresets();
+            if (customPresets[index]) {
+                loadState(customPresets[index].state);
             }
         });
 
         document.getElementById('deletePreset').addEventListener('click', () => {
             const select = document.getElementById('presetSelect');
-            const index = select.value;
-            if (index === "") {
-                alert('Please select a preset to delete.');
+            const value = select.value;
+            if (value === "") {
+                alert('Please select a custom preset to delete.');
                 return;
             }
+
             let presets = getPresets();
-            presets.splice(parseInt(index), 1);
+            presets.splice(parseInt(value), 1);
             savePresets(presets);
             loadPresets();
         });
@@ -768,7 +910,22 @@
             }
         });
 
-        ['x', 'y', 'z', 'grPerLiter', 'density', 'hydration', 'sugarPercent', 'butterPercent', 'saltPercent', 'yeastPercent', 'yudaneFlourPercent', 'yudaneWaterRatio', 'flourPrice', 'milkPrice', 'sugarPrice', 'butterPrice', 'saltPrice', 'yeastPrice', 'electricityPrice', 'bakingTime', 'ovenPower'].forEach(id => document.getElementById(id).addEventListener('input', calculateIngredients));        
+        // Add event listeners for new preset buttons
+        BUILT_IN_PRESETS.forEach((preset, index) => {
+            document.getElementById(`preset-btn-${index}`).addEventListener('click', () => loadState(preset.state));
+        });
+
+        document.getElementById('shareUrl').addEventListener('click', () => {
+            const url = generateShareUrl();
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Shareable URL copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy URL: ', err);
+                alert('Failed to copy URL. Please copy it manually from the address bar.');
+            });
+        });
+
+        ['x', 'y', 'z', 'directLiters', 'grPerLiter', 'density', 'hydration', 'sugarPercent', 'butterPercent', 'saltPercent', 'yeastPercent', 'yudaneFlourPercent', 'yudaneWaterRatio', 'flourPrice', 'milkPrice', 'sugarPrice', 'butterPrice', 'saltPrice', 'yeastPrice', 'electricityPrice', 'bakingTime', 'ovenPower'].forEach(id => document.getElementById(id).addEventListener('input', calculateIngredients));        
         document.getElementById('resetButton').addEventListener('click', resetToDefaults);
         
         init();
