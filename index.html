@@ -67,6 +67,19 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 20px;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .ingredients-section {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #ffd700;
         }
         
         .section-title {
@@ -91,7 +104,7 @@
         }
         
         input {
-            padding: 10px;
+            padding: 6px 10px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 1em;
@@ -298,6 +311,15 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        @media (max-width: 768px) {
+            .presets-container {
+                grid-template-columns: 1fr;
+            }
+            .cost-inputs-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -395,9 +417,9 @@
             </div>
             
             <!-- Ingredients -->
-            <div class="section">
+            <div class="section ingredients-section">
                 <h2 class="section-title">Ingredients (grams)</h2>
-                <div class="ingredients">
+                <div>
                     <div class="result-item">
                         <div class="ingredient-label-group">
                             <span class="result-label">Flour (Main):</span>
