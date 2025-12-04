@@ -4,41 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shokupan Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Roboto', sans-serif;
+            --background-color: #ffffff;
+            --text-color: #121212;
+            --border-color: #e0e0e0;
+            --primary-color: #121212;
+            --secondary-color: #666666;
+            --danger-color: #d9534f;
+            --success-color: #5cb85c;
+            --input-bg: #f5f5f5;
+        }
+
+        body.dark-theme {
+            --background-color: #1a1a1a;
+            --text-color: #f5f5f5;
+            --border-color: #333333;
+            --primary-color: #f5f5f5;
+            --secondary-color: #aaaaaa;
+            --input-bg: #2a2a2a;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            min-height: 100vh;
+            font-family: var(--font-sans);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
             padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
         }
-        
+
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 30px;
-            max-width: 1200px;
+            max-width: 960px;
             margin: 0 auto;
+            background-color: var(--background-color);
+            padding: 20px 40px;
         }
         
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 2em;
-        }
-        
-        .subtitle {
-            text-align: center;
-            color: #666;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
             margin-bottom: 30px;
-            font-size: 0.9em;
+        }
+
+        h1 {
+            font-family: var(--font-serif);
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--secondary-color);
         }
         
         .presets-container {
@@ -82,25 +113,35 @@
             border: 2px solid #ffd700;
         }
         
-        .section-title {
-            font-size: 1.2em;
-            font-weight: 700;
-            color: #f5576c;
-            margin-bottom: 5px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f5576c;
+        .section {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 30px;
         }
-        
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            cursor: default;
+        }
+        details > summary.section-title {
+            cursor: pointer;
+        }
+
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 4px;
+            margin-bottom: 10px;
         }
         
-        label {
-            font-weight: 600;
-            color: #555;
-            font-size: 0.85em;
+        label, .result-label {
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            font-weight: 500;
         }
         
         input {
@@ -110,110 +151,150 @@
             font-size: 1em;
             transition: border-color 0.3s;
         }
-        
-        input:focus {
+
+        .input-field:focus {
             outline: none;
-            border-color: #f5576c;
+            border-color: var(--primary-color);
         }
-        
-        .results {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
+
         .result-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px 12px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        
-        .result-label {
-            font-weight: 600;
-            color: #666;
-            font-size: 0.9em;
-        }
-        
-        .result-value {
-            font-weight: 700;
-            color: #f5576c;
-            font-size: 0.9em;
-        }
-
-        .ingredient-label-group {
-            display: flex;
             align-items: center;
-            gap: 8px;
-            position: relative; /* For tooltip positioning */
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-item:last-child {
+            border-bottom: none;
         }
 
-        .ingredient-label-group label {
-            font-weight: 600;
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        .ingredient-label-group input[type=number] {
-            width: 60px;
-            padding: 4px 8px;
-            font-size: 0.9em;
-        }
-
-        .tooltip-icon {
-            cursor: help;
-            color: #aaa;
+        .result-value {
+            font-weight: 500;
+            font-size: 1rem;
         }
         
         .total-dough {
-            background: #f5576c;
-            color: white;
-            font-size: 1.1em;
+            font-weight: bold;
+            border-top: 2px solid var(--text-color);
             margin-top: 10px;
         }
         
-        .total-dough .result-label,
-        .total-dough .result-value {
-            color: white;
+        .btn {
+            cursor: pointer;
+            background-color: var(--background-color);
+            transition: background-color 0.2s, color 0.2s;
+            text-align: center;
         }
-        
-        #canvas-container {
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
-            height: 400px;
+        .btn:hover {
+            background-color: var(--text-color);
+            color: var(--background-color);
         }
-        
-        .preset-buttons {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
+        .btn.active {
+            background-color: var(--text-color);
+            color: var(--background-color);
+            cursor: default;
+        }
+        .btn.btn-danger { border-color: var(--danger-color); color: var(--danger-color); }
+        .btn.btn-danger:hover { background-color: var(--danger-color); color: white; }
+        .btn.btn-success { border-color: var(--success-color); color: var(--success-color); }
+        .btn.btn-success:hover { background-color: var(--success-color); color: white; }
+
+        .pan-inputs, .presets-toolbar, .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .pan-inputs .input-group { flex: 1; }
+
+        .presets-toolbar { justify-content: space-between; }
+        .preset-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        .preset-buttons .btn { flex: 1; }
+
+        .custom-presets {
+            display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+        }
+
+        .number-input-custom {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 4px 8px;
+            width: 100px;
+            justify-content: space-between;
+        }
+        .number-input-custom button {
+            background: none;
+            border: none;
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 4px;
+        }
+        .number-input-custom .value-display {
+            font-weight: 500;
+            cursor: pointer;
+            flex-grow: 1;
+            text-align: center;
+        }
+        .number-input-custom input.value-edit {
+            width: 100%;
+            text-align: center;
+            border: none;
+            background: none;
+            color: var(--text-color);
+            font-size: 1rem;
+            font-weight: 500;
+            display: none; /* Hidden by default */
+        }
+        .number-input-custom input.value-edit:focus {
+            outline: none;
+        }
+
+        #canvas-container {
+            height: 200px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
-        canvas {
-            display: block;
-            width: 100% !important;
-            height: 100% !important;
+        .modal-content {
+            background: var(--background-color);
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
         }
         
         .cost-inputs-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
-        
 
-        /* Add this to prevent overflow issues */
-        input[type=number] {
-            max-width: 150px;
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--secondary-color);
         }
 
         .modal {
@@ -397,7 +478,26 @@
                     <button id="resetButton" style="padding: 10px; border-radius: 8px; border: none; background: #6c757d; color: white; cursor: pointer; font-size: 0.9em; margin-top: 10px;">Reset to Defaults</button>
                 </div>
 
-                <div class="results">
+                <section class="section">
+                    <h2 class="section-title">Pan Dimensions (cm)</h2>
+                    <div class="pan-inputs">
+                        <div class="input-group">
+                            <label for="x">Length</label>
+                            <input type="number" id="x" value="20" min="0.1" step="0.1" class="input-field">
+                        </div>
+                        <div class="input-group">
+                            <label for="y">Height</label>
+                            <input type="number" id="y" value="10" min="0.1" step="0.1" class="input-field">
+                        </div>
+                        <div class="input-group">
+                            <label for="z">Depth</label>
+                            <input type="number" id="z" value="10" min="0.1" step="0.1" class="input-field">
+                        </div>
+                        <div class="input-group">
+                            <label for="directLiters">Volume (L)</label>
+                            <input type="number" id="directLiters" value="2.0" min="0.01" step="0.01" class="input-field">
+                        </div>
+                    </div>
                     <div class="result-item">
                         <span class="result-label">Pan Volume:</span>
                         <span class="result-value" id="volume">2000 cm³</span>
@@ -437,43 +537,42 @@
                     <div class="result-item">
                         <div class="ingredient-label-group">
                             <label for="yudaneFlourPercent">Yudane Flour (%):</label>
-                            <input type="number" id="yudaneFlourPercent" value="20" min="0" step="1">
+                            <input type="number" id="yudaneFlourPercent" value="20" min="0" step="1" class="input-field">
                         </div>
                         <span class="result-value" id="yudaneFlour">0 g</span>
                     </div>
                     <div class="result-item">
                         <div class="ingredient-label-group">
                             <label for="yudaneWaterRatio">Yudane Water Ratio:</label>
-                            <input type="number" id="yudaneWaterRatio" value="2" min="0" step="0.1">
-                            <span class="tooltip-icon" title="Ratio of water to Yudane flour. E.g., a value of 2 means a 1:2 ratio (1 part flour, 2 parts water).">&#9432;</span>
+                            <input type="number" id="yudaneWaterRatio" value="2" min="0" step="0.1" class="input-field">
                         </div>
                         <span class="result-value" id="yudaneWater">0 g</span>
                     </div>
                     <div class="result-item">
                         <div class="ingredient-label-group">
                             <label for="sugarPercent">Sugar (%):</label>
-                            <input type="number" id="sugarPercent" value="6" min="0" step="0.1">
+                            <input type="number" id="sugarPercent" value="6" min="0" step="0.1" class="input-field">
                         </div>
                         <span class="result-value" id="sugar">0 g</span>
                     </div>
                     <div class="result-item">
                         <div class="ingredient-label-group">
                             <label for="butterPercent">Butter (%):</label>
-                            <input type="number" id="butterPercent" value="5" min="0" step="0.1">
+                            <input type="number" id="butterPercent" value="5" min="0" step="0.1" class="input-field">
                         </div>
                         <span class="result-value" id="butter">0 g</span>
                     </div>
                     <div class="result-item">
                         <div class="ingredient-label-group">
                             <label for="saltPercent">Salt (%):</label>
-                            <input type="number" id="saltPercent" value="1.7" min="0" step="0.1">
+                            <input type="number" id="saltPercent" value="1.7" min="0" step="0.1" class="input-field">
                         </div>
                         <span class="result-value" id="salt">0 g</span>
                     </div>
                     <div class="result-item">
                         <div class="ingredient-label-group">
                             <label for="yeastPercent">Yeast (%):</label>
-                            <input type="number" id="yeastPercent" value="0.6" min="0" step="0.1">
+                            <input type="number" id="yeastPercent" value="0.6" min="0" step="0.1" class="input-field">
                         </div>
                         <span class="result-value" id="yeast">0 g</span>
                     </div>
@@ -585,6 +684,22 @@
        <!-- Google tag (gtag.js) -->
     <script>
         let scene, camera, renderer, cube;
+        let isLoadingState = false;
+        const domCache = {};
+        const inputIds = [
+            'x', 'y', 'z', 'directLiters', 'grPerLiter', 'density', 'hydration',
+            'sugarPercent', 'butterPercent', 'saltPercent', 'yeastPercent',
+            'yudaneFlourPercent', 'yudaneWaterRatio', 'flourPrice', 'milkPrice',
+            'sugarPrice', 'butterPrice', 'saltPrice', 'yeastPrice',
+            'electricityPrice', 'bakingTime', 'ovenPower'
+        ];
+
+        function cacheDomElements() {
+            inputIds.forEach(id => {
+                domCache[id] = document.getElementById(id);
+            });
+        }
+
         function init() {
             const container = document.getElementById('canvas-container');
             
@@ -669,19 +784,19 @@
         
         function saveState() {
             const state = {
-                x: document.getElementById('x').value,
-                directLiters: document.getElementById('directLiters').value,
-                y: document.getElementById('y').value,
-                z: document.getElementById('z').value,
-                grPerLiter: document.getElementById('grPerLiter').value,
-                density: document.getElementById('density').value,
-                hydration: document.getElementById('hydration').value,
-                sugarPercent: document.getElementById('sugarPercent').value,
-                butterPercent: document.getElementById('butterPercent').value,
-                saltPercent: document.getElementById('saltPercent').value,
-                yeastPercent: document.getElementById('yeastPercent').value,
-                yudaneFlourPercent: document.getElementById('yudaneFlourPercent').value,
-                yudaneWaterRatio: document.getElementById('yudaneWaterRatio').value,
+                x: domCache.x.value,
+                directLiters: domCache.directLiters.value,
+                y: domCache.y.value,
+                z: domCache.z.value,
+                grPerLiter: domCache.grPerLiter.value,
+                density: domCache.density.value,
+                hydration: domCache.hydration.value,
+                sugarPercent: domCache.sugarPercent.value,
+                butterPercent: domCache.butterPercent.value,
+                saltPercent: domCache.saltPercent.value,
+                yeastPercent: domCache.yeastPercent.value,
+                yudaneFlourPercent: domCache.yudaneFlourPercent.value,
+                yudaneWaterRatio: domCache.yudaneWaterRatio.value,
             };
             localStorage.setItem('shokupanCalculatorState', JSON.stringify(state));
         }
@@ -722,10 +837,10 @@
         ];
 
         function calculateIngredients() {
-            let x = parseFloat(document.getElementById('x').value) || 1;
-            let y = parseFloat(document.getElementById('y').value) || 1;
-            let z = parseFloat(document.getElementById('z').value) || 1;
-            const directLitersInput = document.getElementById('directLiters');
+            let x = parseFloat(domCache.x.value) || 1;
+            let y = parseFloat(domCache.y.value) || 1;
+            let z = parseFloat(domCache.z.value) || 1;
+            const directLitersInput = domCache.directLiters;
 
             // If user changed the liters input, recalculate x, y, z to match
             if (document.activeElement.id === 'directLiters') {
@@ -738,9 +853,9 @@
                     x *= scaleFactor;
                     y *= scaleFactor;
                     z *= scaleFactor;
-                    document.getElementById('x').value = x.toFixed(2);
-                    document.getElementById('y').value = y.toFixed(2);
-                    document.getElementById('z').value = z.toFixed(2);
+                    domCache.x.value = x.toFixed(2);
+                    domCache.y.value = y.toFixed(2);
+                    domCache.z.value = z.toFixed(2);
                 }
             }
 
@@ -748,32 +863,32 @@
             const volumeCm3 = x * y * z;
             const volumeLiters = volumeCm3 / 1000;
 
-            const grPerLiter = parseFloat(document.getElementById('grPerLiter').value) || 286;
-            const density = parseFloat(document.getElementById('density').value) || 1.0;
-            const hydration = parseFloat(document.getElementById('hydration').value) || 70.1;
+            const grPerLiter = parseFloat(domCache.grPerLiter.value) || 286;
+            const density = parseFloat(domCache.density.value) || 1.0;
+            const hydration = parseFloat(domCache.hydration.value) || 70.1;
 
             // Calculate total dough weight
             let totalDoughWeight = volumeLiters * grPerLiter * density;
             totalDoughWeight = Math.round(totalDoughWeight); // Round total dough weight first
 
             // Baker's percentages
-            const yudaneFlourPercent = (parseFloat(document.getElementById('yudaneFlourPercent').value) || 0) / 100;
-            const sugarPercent = (parseFloat(document.getElementById('sugarPercent').value) || 0) / 100;
-            const butterPercent = (parseFloat(document.getElementById('butterPercent').value) || 0) / 100;
-            const saltPercent = (parseFloat(document.getElementById('saltPercent').value) || 0) / 100;
-            const yeastPercent = (parseFloat(document.getElementById('yeastPercent').value) || 0) / 100;
-            const yudaneWaterRatio = parseFloat(document.getElementById('yudaneWaterRatio').value) || 2;
+            const yudaneFlourPercent = (parseFloat(domCache.yudaneFlourPercent.value) || 0) / 100;
+            const sugarPercent = (parseFloat(domCache.sugarPercent.value) || 0) / 100;
+            const butterPercent = (parseFloat(domCache.butterPercent.value) || 0) / 100;
+            const saltPercent = (parseFloat(domCache.saltPercent.value) || 0) / 100;
+            const yeastPercent = (parseFloat(domCache.yeastPercent.value) || 0) / 100;
+            const yudaneWaterRatio = parseFloat(domCache.yudaneWaterRatio.value) || 2;
             
             // Get prices from input fields
-            const flourPrice = parseFloat(document.getElementById('flourPrice').value) || 36;
-            const milkPrice = parseFloat(document.getElementById('milkPrice').value) || 0;
-            const sugarPrice = parseFloat(document.getElementById('sugarPrice').value) || 0;
-            const butterPrice = parseFloat(document.getElementById('butterPrice').value) || 0;
-            const saltPrice = parseFloat(document.getElementById('saltPrice').value) || 0;
-            const yeastPrice = parseFloat(document.getElementById('yeastPrice').value) || 0;
-            const electricityPrice = parseFloat(document.getElementById('electricityPrice').value) || 0;
-            const bakingTime = parseFloat(document.getElementById('bakingTime').value) || 0;
-            const ovenPower = parseFloat(document.getElementById('ovenPower').value) || 0;
+            const flourPrice = parseFloat(domCache.flourPrice.value) || 36;
+            const milkPrice = parseFloat(domCache.milkPrice.value) || 0;
+            const sugarPrice = parseFloat(domCache.sugarPrice.value) || 0;
+            const butterPrice = parseFloat(domCache.butterPrice.value) || 0;
+            const saltPrice = parseFloat(domCache.saltPrice.value) || 0;
+            const yeastPrice = parseFloat(domCache.yeastPrice.value) || 0;
+            const electricityPrice = parseFloat(domCache.electricityPrice.value) || 0;
+            const bakingTime = parseFloat(domCache.bakingTime.value) || 0;
+            const ovenPower = parseFloat(domCache.ovenPower.value) || 0;
 
             // Adjust total percentage to reflect the 1:2 yudane ratio (1 part flour, 2 parts water)
             // The total percentage is the sum of all ingredients relative to the total flour weight (which is 100% or 1). This is used to find the flour amount from the total dough weight.
@@ -890,6 +1005,7 @@
         }
 
         function loadState(state) {
+            isLoadingState = true;
             let savedState = state;
 
             // Check for URL parameters first
@@ -914,42 +1030,45 @@
 
             if (!savedState) {
                 calculateIngredients();
+                isLoadingState = false;
                 return;
             }
 
             // If loading a full state (like from localStorage on page load), update everything
             if (savedState.x) {
-                document.getElementById('x').value = savedState.x;
-                document.getElementById('y').value = savedState.y;
-                document.getElementById('z').value = savedState.z;
-                document.getElementById('directLiters').value = savedState.directLiters || (savedState.x * savedState.y * savedState.z / 1000).toFixed(2);
+                domCache.x.value = savedState.x;
+                domCache.y.value = savedState.y;
+                domCache.z.value = savedState.z;
+                domCache.directLiters.value = savedState.directLiters || (savedState.x * savedState.y * savedState.z / 1000).toFixed(2);
             }
 
             // Update only the parameters present in the state (useful for presets and localStorage)
             const fieldsToUpdate = ['grPerLiter', 'density', 'hydration', 'sugarPercent', 'butterPercent', 'saltPercent', 'yeastPercent', 'yudaneFlourPercent', 'yudaneWaterRatio'];
             fieldsToUpdate.forEach(field => {
-                if (savedState[field]) {
-                    document.getElementById(field).value = savedState[field];
+                if (savedState[field] && domCache[field]) {
+                    domCache[field].value = savedState[field];
+                    domCache[field].dispatchEvent(new Event('input', { bubbles: true }));
                 }
             });
 
             calculateIngredients();
+            isLoadingState = false;
         }
 
         function resetToDefaults() {
-            document.getElementById('x').value = "20";
-            document.getElementById('y').value = "10";
-            document.getElementById('z').value = "10";
-            document.getElementById('directLiters').value = "2.00";
-            document.getElementById('grPerLiter').value = "286";
-            document.getElementById('density').value = "1.0";
-            document.getElementById('hydration').value = "70";
-            document.getElementById('sugarPercent').value = "6";
-            document.getElementById('butterPercent').value = "5";
-            document.getElementById('saltPercent').value = "1.7";
-            document.getElementById('yeastPercent').value = "0.6";
-            document.getElementById('yudaneFlourPercent').value = "20";
-            document.getElementById('yudaneWaterRatio').value = "2";
+            domCache.x.value = "20";
+            domCache.y.value = "10";
+            domCache.z.value = "10";
+            domCache.directLiters.value = "2.00";
+            domCache.grPerLiter.value = "286";
+            domCache.density.value = "1.0";
+            domCache.hydration.value = "70";
+            domCache.sugarPercent.value = "6";
+            domCache.butterPercent.value = "5";
+            domCache.saltPercent.value = "1.7";
+            domCache.yeastPercent.value = "0.6";
+            domCache.yudaneFlourPercent.value = "20";
+            domCache.yudaneWaterRatio.value = "2";
             localStorage.removeItem('shokupanCalculatorState');
             calculateIngredients();
         }
@@ -983,7 +1102,7 @@
         }
 
         document.getElementById('savePreset').addEventListener('click', () => {
-            const name = document.getElementById('presetName').value.trim();
+            const name = domCache.presetName.value.trim();
             if (!name) {
                 alert('Please enter a name for the preset.');
                 return;
@@ -993,21 +1112,21 @@
             const newPreset = {
                 name: name,
                 state: {
-                    grPerLiter: document.getElementById('grPerLiter').value,
-                    density: document.getElementById('density').value,
-                    hydration: document.getElementById('hydration').value,
-                    sugarPercent: document.getElementById('sugarPercent').value,
-                    butterPercent: document.getElementById('butterPercent').value,
-                    saltPercent: document.getElementById('saltPercent').value,
-                    yeastPercent: document.getElementById('yeastPercent').value,
-                    yudaneFlourPercent: document.getElementById('yudaneFlourPercent').value,
-                    yudaneWaterRatio: document.getElementById('yudaneWaterRatio').value,
+                    grPerLiter: domCache.grPerLiter.value,
+                    density: domCache.density.value,
+                    hydration: domCache.hydration.value,
+                    sugarPercent: domCache.sugarPercent.value,
+                    butterPercent: domCache.butterPercent.value,
+                    saltPercent: domCache.saltPercent.value,
+                    yeastPercent: domCache.yeastPercent.value,
+                    yudaneFlourPercent: domCache.yudaneFlourPercent.value,
+                    yudaneWaterRatio: domCache.yudaneWaterRatio.value,
                 }
             };
             presets.push(newPreset);
             savePresets(presets);
             loadPresets();
-            document.getElementById('presetName').value = '';
+            domCache.presetName.value = '';
         });
 
         document.getElementById('presetSelect').addEventListener('change', (e) => {
@@ -1057,7 +1176,14 @@
 
         // Add event listeners for new preset buttons
         BUILT_IN_PRESETS.forEach((preset, index) => {
-            document.getElementById(`preset-btn-${index}`).addEventListener('click', () => loadState(preset.state));
+            const button = document.getElementById(`preset-btn-${index}`);
+            button.addEventListener('click', () => {
+                // Remove active class from all preset buttons
+                document.querySelectorAll('.preset-buttons .btn').forEach(btn => btn.classList.remove('active'));
+                // Add active class to the clicked button
+                button.classList.add('active');
+                loadState(preset.state);
+            });
         });
 
         // Theme Switcher
@@ -1102,7 +1228,111 @@
         ['x', 'y', 'z', 'directLiters', 'grPerLiter', 'density', 'hydration', 'sugarPercent', 'butterPercent', 'saltPercent', 'yeastPercent', 'yudaneFlourPercent', 'yudaneWaterRatio', 'flourPrice', 'milkPrice', 'sugarPrice', 'butterPrice', 'saltPrice', 'yeastPrice', 'electricityPrice', 'bakingTime', 'ovenPower'].forEach(id => document.getElementById(id).addEventListener('input', calculateIngredients));        
         document.getElementById('resetButton').addEventListener('click', resetToDefaults);
         
-        init();
+        function createCustomNumberInput(originalInput) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'number-input-custom';
+
+            const minusBtn = document.createElement('button');
+            minusBtn.textContent = '-';
+
+            const plusBtn = document.createElement('button');
+            plusBtn.textContent = '+';
+
+            const valueDisplay = document.createElement('span');
+            valueDisplay.className = 'value-display';
+            valueDisplay.textContent = originalInput.value;
+
+            const valueEdit = document.createElement('input');
+            valueEdit.type = 'number';
+            valueEdit.className = 'value-edit';
+            valueEdit.value = originalInput.value;
+            valueEdit.step = originalInput.step || '1'; // Copy step attribute
+            valueEdit.dataset.originalId = originalInput.id;
+
+            wrapper.appendChild(minusBtn);
+            wrapper.appendChild(valueDisplay);
+            wrapper.appendChild(valueEdit);
+            wrapper.appendChild(plusBtn);
+
+            // Replace original input
+            originalInput.parentNode.replaceChild(wrapper, originalInput);
+
+            // --- Event Listeners ---
+            function updateOriginalInput(newValue) {
+                originalInput.value = newValue;
+                valueDisplay.textContent = newValue;
+                valueEdit.value = newValue;
+                originalInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+
+            minusBtn.addEventListener('click', () => {
+                const step = parseFloat(originalInput.step) || 1;
+                const newValue = parseFloat(originalInput.value) - step;
+                if (originalInput.min === '' || newValue >= parseFloat(originalInput.min)) {
+                    updateOriginalInput(newValue.toFixed(originalInput.step.includes('.') ? originalInput.step.split('.')[1].length : 0));
+                }
+            });
+
+            plusBtn.addEventListener('click', () => {
+                const step = parseFloat(originalInput.step) || 1;
+                const newValue = parseFloat(originalInput.value) + step;
+                 if (originalInput.max === '' || newValue <= parseFloat(originalInput.max)) {
+                    updateOriginalInput(newValue.toFixed(originalInput.step.includes('.') ? originalInput.step.split('.')[1].length : 0));
+                }
+            });
+
+            valueDisplay.addEventListener('click', () => {
+                valueDisplay.style.display = 'none';
+                valueEdit.style.display = 'block';
+                valueEdit.focus();
+                valueEdit.select();
+            });
+
+            function endEdit() {
+                updateOriginalInput(valueEdit.value);
+                valueDisplay.style.display = 'block';
+                valueEdit.style.display = 'none';
+            }
+
+            valueEdit.addEventListener('blur', endEdit);
+            valueEdit.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    endEdit();
+                }
+            });
+
+            // Update custom input when original changes (e.g., on preset load)
+            originalInput.addEventListener('input', () => {
+                if (document.activeElement !== valueEdit) {
+                    valueDisplay.textContent = originalInput.value;
+                    valueEdit.value = originalInput.value;
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            cacheDomElements();
+            ['yudaneFlourPercent', 'yudaneWaterRatio', 'sugarPercent', 'butterPercent', 'saltPercent', 'yeastPercent'].forEach(id => {
+                const input = domCache[id];
+                if (input) {
+                    createCustomNumberInput(input);
+                }
+            });
+
+            // Add event listeners for all inputs to trigger recalculation
+            inputIds.forEach(id => {
+                if (domCache[id]) {
+                    domCache[id].addEventListener('input', () => {
+                        if (!isLoadingState) {
+                             document.querySelectorAll('.preset-buttons .btn.active').forEach(btn => btn.classList.remove('active'));
+                        }
+                        calculateIngredients();
+                    });
+                }
+            });
+
+            init();
+        });
     </script>
 </body>
 </html>
