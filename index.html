@@ -72,24 +72,45 @@
             color: var(--secondary-color);
         }
         
-        .theme-switcher {
-            font-size: 1.5rem;
-            cursor: pointer;
-            background: none;
-            border: none;
-            color: var(--text-color);
-        }
-
-        .main-layout {
+        .presets-container {
+            background: #fff9e6;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #ffd700;
+            margin-bottom: 30px;
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 50px;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
-        .main-content, .sidebar {
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            grid-template-rows: auto;
+        }
+        
+        .section {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #ffd700;
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 20px;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .ingredients-section {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #ffd700;
         }
         
         .section {
@@ -123,14 +144,12 @@
             font-weight: 500;
         }
         
-        .input-field, .btn, select {
-            width: 100%;
-            padding: 8px 12px;
-            font-size: 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            background-color: var(--input-bg);
-            color: var(--text-color);
+        input {
+            padding: 6px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
         }
 
         .input-field:focus {
@@ -278,22 +297,107 @@
             color: var(--secondary-color);
         }
 
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        /* Dark Theme */
+        body.dark-theme {
+            background: #1a202c;
+            color: #e2e8f0;
+        }
+        body.dark-theme .container {
+            background: #2d3748;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        body.dark-theme h1, body.dark-theme .subtitle, body.dark-theme label, body.dark-theme .section-title {
+            color: #e2e8f0;
+        }
+        body.dark-theme input, body.dark-theme select {
+            background: #4a5568;
+            border-color: #718096;
+            color: #e2e8f0;
+        }
+        body.dark-theme .section, body.dark-theme .presets-container, body.dark-theme .modal-content {
+            background: #2d3748;
+            border-color: #4a5568;
+        }
+        body.dark-theme .result-item {
+            background: #4a5568;
+        }
+        body.dark-theme .result-label, body.dark-theme .ingredient-label-group label, body.dark-theme .tooltip-icon {
+            color: #a0aec0;
+        }
+        body.dark-theme .result-value {
+            color: #63b3ed;
+        }
+        body.dark-theme .total-dough {
+            background: #63b3ed;
+        }
+        body.dark-theme .total-dough .result-label, body.dark-theme .total-dough .result-value {
+            color: #1a202c;
+        }
+
+        .theme-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+        }
+
         #toast {
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background-color: var(--primary-color);
-            color: var(--background-color);
-            padding: 12px 20px;
-            border-radius: 4px;
+            background-color: #333;
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
             z-index: 1001;
-            font-size: 1rem;
+            font-size: 1em;
             display: none;
         }
 
+        @media (max-width: 1024px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 768px) {
-            .main-layout {
+            .presets-container {
+                grid-template-columns: 1fr;
+            }
+            .cost-inputs-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -301,27 +405,78 @@
 </head>
 <body>
     <div class="container">
-        <header class="header">
-            <div class="title-block">
-                <h1>Shokupan Dough Calculator</h1>
-                <p class="subtitle">A minimalist calculator for your perfect loaf.</p>
-            </div>
-            <div class="theme-switcher">🌙</div>
-        </header>
+        <div class="theme-switcher">🌙</div>
+        <h1>🍞 Shokupan Dough Calculator</h1>
+        <p class="subtitle">Calculate ingredients and cost for your shokupan loaf!</p>
         
-        <div class="main-layout">
-            <div class="main-content">
-                <section class="section">
-                    <h2 class="section-title">Built-in Presets</h2>
-                    <div class="presets-toolbar">
-                        <div class="preset-buttons">
-                            <button id="preset-btn-0" class="btn">Buttery</button>
-                            <button id="preset-btn-1" class="btn">Classic</button>
-                            <button id="preset-btn-2" class="btn">Whole Wheat</button>
-                            <button id="preset-btn-3" class="btn">Dense WW</button>
-                        </div>
-                    </div>
-                </section>
+        <div class="presets-container">
+            <div>
+                <h2 class="section-title">Built-in Presets</h2>
+                <div class="preset-buttons">
+                    <button id="preset-btn-0" style="padding: 10px; border-radius: 8px; border: none; background: #17a2b8; color: white; cursor: pointer;">Buttery</button>
+                    <button id="preset-btn-1" style="padding: 10px; border-radius: 8px; border: none; background: #17a2b8; color: white; cursor: pointer;">Classic</button>
+                    <button id="preset-btn-2" style="padding: 10px; border-radius: 8px; border: none; background: #17a2b8; color: white; cursor: pointer;">Whole Wheat</button>
+                    <button id="preset-btn-3" style="padding: 10px; border-radius: 8px; border: none; background: #17a2b8; color: white; cursor: pointer;">Dense Whole Wheat</button>
+                </div>
+            </div>
+            <div>
+                <h2 class="section-title">Custom Presets</h2>
+                <div class="input-group">
+                    <label for="presetName">Preset Name</label>
+                    <input type="text" id="presetName" placeholder="e.g., 2L Dense Loaf">
+                </div>
+                <div class="input-group" style="flex-direction: row; gap: 10px;">
+                    <button id="savePreset" style="flex: 1; padding: 10px; border-radius: 8px; border: none; background: #28a745; color: white; cursor: pointer;">Save</button>
+                    <select id="presetSelect" style="flex: 2; padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0;"></select>
+                    <button id="deletePreset" style="flex: 1; padding: 10px; border-radius: 8px; border: none; background: #dc3545; color: white; cursor: pointer;">Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Pan Dimensions -->
+            <div class="section">
+                <h2 class="section-title">Pan Dimensions (cm)</h2>
+                <div class="input-group">
+                    <label for="x">Length (X)</label>
+                    <input type="number" id="x" value="20" min="0.1" step="0.1">
+                </div>
+                
+                <div class="input-group">
+                    <label for="y">Height (Y)</label>
+                    <input type="number" id="y" value="10" min="0.1" step="0.1">
+                </div>
+                
+                <div class="input-group">
+                    <label for="z">Depth (Z)</label>
+                    <input type="number" id="z" value="10" min="0.1" step="0.1">
+                </div>
+                
+                <div class="input-group">
+                    <label for="directLiters">Volume (Liters)</label>
+                    <input type="number" id="directLiters" value="2.0" min="0.01" step="0.01">
+                </div>
+
+                <h2 class="section-title">Dough Parameters</h2>
+                
+                <div class="input-group">
+                    <label for="grPerLiter">Grams per Liter</label>
+                    <input type="number" id="grPerLiter" value="286" min="1" step="1">
+                </div>
+                
+                <div class="input-group">
+                    <label for="density">Density Multiplier</label>
+                    <input type="number" id="density" value="1.0" min="0.1" step="0.1">
+                </div>
+                
+                <div class="input-group">
+                    <label for="hydration">Hydration (%)</label>
+                    <input type="number" id="hydration" value="70" min="1" step="1">
+                </div>
+                
+                <div class="input-group">
+                    <button id="resetButton" style="padding: 10px; border-radius: 8px; border: none; background: #6c757d; color: white; cursor: pointer; font-size: 0.9em; margin-top: 10px;">Reset to Defaults</button>
+                </div>
 
                 <section class="section">
                     <h2 class="section-title">Pan Dimensions (cm)</h2>
@@ -347,38 +502,24 @@
                         <span class="result-label">Pan Volume:</span>
                         <span class="result-value" id="volume">2000 cm³</span>
                     </div>
-                </section>
-
-                <section class="section">
-                    <div class="result-item">
-                        <span class="result-label">Total Flour:</span>
-                        <span class="result-value" id="totalFlour">0 g</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Total Water:</span>
-                        <span class="result-value" id="totalWater">0 g</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Actual Hydration:</span>
-                        <span class="result-value" id="actualHydration">0%</span>
-                    </div>
-                </section>
-
-                <section class="section action-buttons">
-                    <button id="showCostModal" class="btn">Calculate Cost</button>
-                    <button id="shareUrl" class="btn">Copy Shareable URL</button>
-                    <button id="resetButton" class="btn">Reset to Defaults</button>
-                </section>
-
-                <section class="section">
-                    <h2 class="section-title">Pan Visualization</h2>
-                    <div id="canvas-container"></div>
-                </section>
+                </div>
             </div>
+            
+            <!-- 3D Visualization -->
+            <div class="section">
+                <h2 class="section-title">Pan Visualization</h2>
+                <div id="canvas-container"></div>
 
-            <aside class="sidebar">
-                <section class="section ingredients-section">
-                    <h2 class="section-title">Ingredients</h2>
+                <div class="input-group" style="margin-top: 20px;">
+                    <h2 class="section-title">Share</h2>
+                    <button id="shareUrl" style="padding: 10px; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer;">Copy Shareable URL</button>
+                </div>
+            </div>
+            
+            <!-- Ingredients -->
+            <div class="section ingredients-section">
+                <h2 class="section-title">Ingredients (grams)</h2>
+                <div>
                     <div class="result-item">
                         <div class="ingredient-label-group">
                             <span class="result-label">Flour (Main):</span>
@@ -439,40 +580,32 @@
                         <span class="result-label">TOTAL DOUGH:</span>
                         <span class="result-value" id="totalDough">0 g</span>
                     </div>
-                </section>
-                <section class="section">
-                    <details>
-                        <summary class="section-title">Advanced Settings</summary>
-                        <div class="input-group">
-                            <label for="grPerLiter">Grams per Liter</label>
-                            <input type="number" id="grPerLiter" value="286" min="1" step="1" class="input-field">
-                        </div>
-                        <div class="input-group">
-                            <label for="density">Density Multiplier</label>
-                            <input type="number" id="density" value="1.0" min="0.1" step="0.1" class="input-field">
-                        </div>
-                        <div class="input-group">
-                            <label for="hydration">Hydration (%)</label>
-                            <input type="number" id="hydration" value="70" min="1" step="1" class="input-field">
-                        </div>
-                    </details>
-                </section>
-                <section class="section">
-                    <h2 class="section-title">Custom Presets</h2>
-                    <div class="input-group">
-                        <label for="presetName">New Preset Name</label>
-                        <input type="text" id="presetName" placeholder="e.g., My Favorite Loaf" class="input-field">
+                </div>
+                
+                <div class="results" style="margin-top: 15px;">
+                    <div class="result-item">
+                        <span class="result-label">Total Flour:</span>
+                        <span class="result-value" id="totalFlour">0 g</span>
                     </div>
-                    <button id="savePreset" class="btn btn-success">Save Current as Preset</button>
-                    <div class="input-group" style="margin-top: 15px;">
-                        <label for="presetSelect">Load Preset</label>
-                        <div class="custom-presets">
-                            <select id="presetSelect" class="input-field"></select>
-                            <button id="deletePreset" class="btn btn-danger">Delete</button>
-                        </div>
+                    <div class="result-item">
+                        <span class="result-label">Total Water:</span>
+                        <span class="result-value" id="totalWater">0 g</span>
                     </div>
-                </section>
-            </aside>
+                    <div class="result-item">
+                        <span class="result-label">Actual Hydration:</span>
+                        <span class="result-value" id="actualHydration">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cost Calculation Section -->
+            <div class="section">
+                <h2 class="section-title">Cost Calculation</h2>
+                <p>Calculate the cost of your loaf, including ingredients and electricity.</p>
+                <button id="showCostModal" style="padding: 10px; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer; font-size: 1em; margin-top: 10px;">
+                    Calculate Cost
+                </button>
+            </div>
         </div>
     </div>
 
@@ -485,39 +618,39 @@
             <div class="cost-inputs-grid">
                 <div class="input-group">
                     <label for="flourPrice">Flour Price (₺/kg)</label>
-                    <input type="number" id="flourPrice" value="36" min="0" step="0.01" class="input-field">
+                    <input type="number" id="flourPrice" value="36" min="0" step="0.01">
                 </div>
                 <div class="input-group">
                     <label for="milkPrice">Milk Price (₺/Liter)</label>
-                    <input type="number" id="milkPrice" value="50" min="0" step="0.01" class="input-field">
+                    <input type="number" id="milkPrice" value="50" min="0" step="0.01">
                 </div>
                 <div class="input-group">
                     <label for="sugarPrice">Sugar Price (₺/kg)</label>
-                    <input type="number" id="sugarPrice" value="50" min="0" step="0.01" class="input-field">
+                    <input type="number" id="sugarPrice" value="50" min="0" step="0.01">
                 </div>
                 <div class="input-group">
                     <label for="butterPrice">Butter Price (₺/kg)</label>
-                    <input type="number" id="butterPrice" value="400" min="0" step="0.01" class="input-field">
+                    <input type="number" id="butterPrice" value="400" min="0" step="0.01">
                 </div>
                 <div class="input-group">
                     <label for="saltPrice">Salt Price (₺/kg)</label>
-                    <input type="number" id="saltPrice" value="45" min="0" step="0.01" class="input-field">
+                    <input type="number" id="saltPrice" value="45" min="0" step="0.01">
                 </div>
                 <div class="input-group">
                     <label for="yeastPrice">Yeast Price (₺/kg)</label>
-                    <input type="number" id="yeastPrice" value="1000" min="0" step="0.01" class="input-field">
+                    <input type="number" id="yeastPrice" value="1000" min="0" step="0.01">
                 </div>
                 <div class="input-group">
                     <label for="electricityPrice">Electricity Price (₺/kWh)</label>
-                    <input type="number" id="electricityPrice" value="3" min="0" step="0.01" class="input-field">
+                    <input type="number" id="electricityPrice" value="3" min="0" step="0.01">
                 </div>
                 <div class="input-group">
                     <label for="bakingTime">Baking Time (minutes)</label>
-                    <input type="number" id="bakingTime" value="35" min="0" step="1" class="input-field">
+                    <input type="number" id="bakingTime" value="35" min="0" step="1">
                 </div>
                 <div class="input-group">
                     <label for="ovenPower">Oven Power (kW)</label>
-                    <input type="number" id="ovenPower" value="2.0" min="0" step="0.1" class="input-field">
+                    <input type="number" id="ovenPower" value="2.0" min="0" step="0.1">
                 </div>
             </div>
 
@@ -626,18 +759,18 @@
         
         function generateShareUrl() {
             const state = {
-                x: domCache.x.value,
-                y: domCache.y.value,
-                z: domCache.z.value,
-                gl: domCache.grPerLiter.value,
-                d: domCache.density.value,
-                h: domCache.hydration.value,
-                s: domCache.sugarPercent.value,
-                b: domCache.butterPercent.value,
-                st: domCache.saltPercent.value,
-                yt: domCache.yeastPercent.value,
-                yf: domCache.yudaneFlourPercent.value,
-                yw: domCache.yudaneWaterRatio.value,
+                x: document.getElementById('x').value,
+                y: document.getElementById('y').value,
+                z: document.getElementById('z').value,
+                gl: document.getElementById('grPerLiter').value,
+                d: document.getElementById('density').value,
+                h: document.getElementById('hydration').value,
+                s: document.getElementById('sugarPercent').value,
+                b: document.getElementById('butterPercent').value,
+                st: document.getElementById('saltPercent').value,
+                y: document.getElementById('yeastPercent').value,
+                yf: document.getElementById('yudaneFlourPercent').value,
+                yw: document.getElementById('yudaneWaterRatio').value,
             };
             const encodedState = btoa(JSON.stringify(state));
             return `${window.location.origin}${window.location.pathname}?r=${encodedState}`;
@@ -885,7 +1018,7 @@
                         x: decodedState.x, y: decodedState.y, z: decodedState.z,
                         grPerLiter: decodedState.gl, density: decodedState.d, hydration: decodedState.h,
                         sugarPercent: decodedState.s, butterPercent: decodedState.b, saltPercent: decodedState.st,
-                        yeastPercent: decodedState.yt, yudaneFlourPercent: decodedState.yf, yudaneWaterRatio: decodedState.yw
+                        yeastPercent: decodedState.y, yudaneFlourPercent: decodedState.yf, yudaneWaterRatio: decodedState.yw
                     };
                 } catch (e) { console.error("Failed to parse recipe from URL", e); }
             }
@@ -1055,26 +1188,22 @@
 
         // Theme Switcher
         const themeSwitcher = document.querySelector('.theme-switcher');
-        function setTheme(isDark) {
-            document.body.classList.toggle('dark-theme', isDark);
-            themeSwitcher.textContent = isDark ? '☀️' : '🌙';
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-
-            // Update visualization background
-            if (scene) {
-                const bgColor = getComputedStyle(document.body).getPropertyValue('--input-bg').trim();
-                scene.background = new THREE.Color(bgColor);
-            }
-        }
-
         themeSwitcher.addEventListener('click', () => {
-            const isDark = !document.body.classList.contains('dark-theme');
-            setTheme(isDark);
+            document.body.classList.toggle('dark-theme');
+            if (document.body.classList.contains('dark-theme')) {
+                themeSwitcher.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeSwitcher.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            }
         });
 
         // Load saved theme
-        const savedTheme = localStorage.getItem('theme');
-        setTheme(savedTheme === 'dark');
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeSwitcher.textContent = '☀️';
+        }
 
         document.getElementById('shareUrl').addEventListener('click', () => {
             const url = generateShareUrl();
@@ -1096,6 +1225,7 @@
             }, 5000);
         }
 
+        ['x', 'y', 'z', 'directLiters', 'grPerLiter', 'density', 'hydration', 'sugarPercent', 'butterPercent', 'saltPercent', 'yeastPercent', 'yudaneFlourPercent', 'yudaneWaterRatio', 'flourPrice', 'milkPrice', 'sugarPrice', 'butterPrice', 'saltPrice', 'yeastPrice', 'electricityPrice', 'bakingTime', 'ovenPower'].forEach(id => document.getElementById(id).addEventListener('input', calculateIngredients));        
         document.getElementById('resetButton').addEventListener('click', resetToDefaults);
         
         function createCustomNumberInput(originalInput) {
