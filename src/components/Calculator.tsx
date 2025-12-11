@@ -478,7 +478,7 @@ export default function Calculator() {
                 setModalConfig({
                     type: 'alert',
                     title: 'Success',
-                    message: `Saved preset "${name}"`,
+                    message: `Saved preset "${name}"${!user ? ' to this device. Log in to sync across devices.' : '.'}`,
                     onConfirm: () => setModalConfig({ type: null })
                 });
             },
@@ -757,7 +757,9 @@ export default function Calculator() {
 
                             <div className="border-t border-gray-100 dark:border-gray-700 pt-4">
                                 <div className="flex items-center justify-between mb-3">
-                                    <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">My Presets</span>
+                                    <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        My Presets {user ? '(Synced)' : '(Local Device)'}
+                                    </span>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     <div
@@ -972,7 +974,7 @@ export default function Calculator() {
             </main>
 
             <footer className="w-full py-6 text-center">
-                <p className="text-xs text-gray-300 dark:text-gray-700 font-mono">v0.21</p>
+                <p className="text-xs text-gray-300 dark:text-gray-700 font-mono">v0.21.1</p>
             </footer>
 
             {/* Modals & Overlays - Reusing existing logic but wrapping in portal/overlay if needed */}
