@@ -29,9 +29,15 @@ jobs:
           fi
 
       - name: List all secrets (names only)
+        env:
+          SECRETS_JSON: ${{ toJSON(secrets) }}
         run: |
           echo "Available secret names:"
-          echo "${{ toJSON(secrets) }}" | jq 'keys'
+          if jq -e . >/dev/null 2>&1 <<<"$SECRETS_JSON"; then
+            echo "$SECRETS_JSON" | jq 'keys'
+          else
+            echo "No secrets or invalid secrets JSON"
+          fi
 
       - name: Setup Node
         uses: actions/setup-node@v4
