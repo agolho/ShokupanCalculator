@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy to GitHub Pages - DEBUG
 
 on:
   push:
@@ -10,16 +10,28 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
-  build:
+  debug:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Check if secret exists
+        run: |
+          echo "Checking secret availability..."
+          if [ -n "${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}" ]; then
+            echo "✅ Secret is available"
+            echo "Length: $(echo -n "${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}" | wc -c) characters"
+            echo "First 5 chars: $(echo -n "${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}" | cut -c1-5)"
+          else
+            echo "❌ Secret is NOT available"
+          fi
+
+      - name: List all secrets (names only)
+        run: |
+          echo "Available secret names:"
+          echo "${{ toJSON(secrets) }}" | jq 'keys'
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -27,40 +39,19 @@ jobs:
           node-version: "20"
           cache: "npm"
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-        with:
-          static_site_generator: next
-
       - name: Install dependencies
         run: npm ci
 
-      - name: Debug Environment Variables
+      - name: Check Next.js config
         run: |
-          if [ -z "${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}" ]; then
-            echo "❌ ERROR: NEXT_PUBLIC_FIREBASE_API_KEY is empty or missing!"
-            exit 1
-          else
-            echo "✅ SUCCESS: NEXT_PUBLIC_FIREBASE_API_KEY found."
+          echo "Checking next.config.js or next.config.mjs..."
+          if [ -f next.config.js ]; then
+            cat next.config.js
+          elif [ -f next.config.mjs ]; then
+            cat next.config.mjs
           fi
 
-      - name: Build with Next.js
-        run: npm run build
-        env:
-          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./out
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Test build with explicit env
+        run: |
+          echo "Testing build..."
+          NEXT_PUBLIC_FIREBASE_API_KEY="${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}" npm run build
