@@ -812,14 +812,14 @@ export default function Calculator() {
 
                             <div className="flex-1 p-6 space-y-1">
                                 <div className="grid grid-cols-12 gap-2 md:gap-4 px-2 mb-2 text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                                    <div className="col-span-4 pl-8">Percentage</div>
+                                    <div className="col-span-4 md:pl-8">Percentage</div>
                                     <div className="col-span-6">Ingredient</div>
                                     <div className="col-span-2 text-right">Grams</div>
                                 </div>
 
                                 {/* Main Flour (Locked) */}
                                 <div className="group flex items-center bg-gray-50 dark:bg-gray-800/40 rounded-xl p-3 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all mb-4">
-                                    <div className="w-8 flex justify-center text-gray-400">
+                                    <div className="hidden md:flex w-8 justify-center text-gray-400">
                                         <span className="material-symbols-outlined text-sm">lock</span>
                                     </div>
                                     <div className="flex-1 grid grid-cols-12 gap-2 md:gap-4 items-center">
@@ -837,7 +837,7 @@ export default function Calculator() {
                                 {/* Dynamic Ingredients */}
                                 {results.ingredients.map((ing, idx) => (
                                     <div key={ing.id} className="group flex items-center hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-xl p-2 transition-all">
-                                        <div className="w-8 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="hidden md:flex w-8 justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button onClick={() => removeIngredient(idx)}>
                                                 <span className="material-symbols-outlined text-gray-400 hover:text-red-500 cursor-pointer text-lg">delete</span>
                                             </button>
@@ -866,6 +866,9 @@ export default function Calculator() {
 
                                             <div className="col-span-6 flex flex-col justify-center">
                                                 <div className="flex items-center gap-2 text-gray-700 dark:text-gray-200 font-medium">
+                                                    <button onClick={() => removeIngredient(idx)} className="md:hidden text-gray-400 hover:text-red-500 flex items-center">
+                                                        <span className="material-symbols-outlined text-lg">delete</span>
+                                                    </button>
                                                     {ing.isLiquid && (
                                                         <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 uppercase">Liq</span>
                                                     )}
@@ -888,7 +891,7 @@ export default function Calculator() {
                                 {/* Water Row (Implicit) */}
                                 {results.mainWater > 0 && (
                                     <div className="group flex items-center bg-blue-50/50 dark:bg-blue-900/10 rounded-xl p-3 border border-transparent transition-all mb-4">
-                                        <div className="w-8"></div>
+                                        <div className="hidden md:flex w-8"></div>
                                         <div className="flex-1 grid grid-cols-12 gap-2 md:gap-4 items-center">
                                             <div className="col-span-4 pl-2 font-mono text-gray-400 text-sm">--</div>
                                             <div className="col-span-6 font-semibold text-blue-900 dark:text-blue-100 flex items-center gap-2">
