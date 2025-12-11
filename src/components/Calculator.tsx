@@ -85,7 +85,6 @@ export default function Calculator() {
 
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        console.log("Loaded Firebase Data:", data);
                         if (data.pan) setPan(data.pan);
                         if (data.settings) setSettings(data.settings);
                         if (data.ingredients) setIngredients(data.ingredients);
@@ -113,7 +112,7 @@ export default function Calculator() {
                         // if (data.theme === 'dark') { ... }
                     } else {
                         // First time login?
-                        console.log("No remote data found.");
+                        // console.log("No remote data found.");
                     }
                 } catch (error) {
                     console.error("Error loading user data:", error);
@@ -241,7 +240,7 @@ export default function Calculator() {
                     // Filter undefined values
                     const cleanState = JSON.parse(JSON.stringify(debouncedState));
                     await setDoc(doc(db, 'users', user.uid), cleanState, { merge: true });
-                    console.log("Synced to Firestore");
+                    // console.log("Synced to Firestore");
                 } catch (err) {
                     console.error("Error saving to Firestore:", err);
                 }
@@ -971,6 +970,10 @@ export default function Calculator() {
                     </div>
                 </div>
             </main>
+
+            <footer className="w-full py-6 text-center">
+                <p className="text-xs text-gray-300 dark:text-gray-700 font-mono">v0.21</p>
+            </footer>
 
             {/* Modals & Overlays - Reusing existing logic but wrapping in portal/overlay if needed */}
             {modalConfig.type && (

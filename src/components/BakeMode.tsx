@@ -34,7 +34,7 @@ export default function BakeMode({ results, onClose, unitSystem }: BakeModeProps
                 if ('wakeLock' in navigator) {
                     // navigator.wakeLock is experimental but types might be present
                     wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('Wake Lock is active');
+                    // console.log('Wake Lock is active');
                 }
             } catch (err: unknown) {
                 const error = err as Error;
@@ -55,7 +55,7 @@ export default function BakeMode({ results, onClose, unitSystem }: BakeModeProps
         return () => {
             if (wakeLock !== null) {
                 wakeLock.release().then(() => {
-                    console.log('Wake Lock released');
+                    // console.log('Wake Lock released');
                 });
             }
             document.removeEventListener('visibilitychange', handleVisibilityChange);
