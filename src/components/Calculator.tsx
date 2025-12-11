@@ -149,8 +149,6 @@ export default function Calculator() {
 
     // --- Hydrate from localStorage (Only if NOT logged in or initial load) ---
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        /* eslint-disable react-hooks/set-state-in-effect */
         // Always load local config initially for instant render
         const saved = localStorage.getItem('shokupanState_v4');
         if (saved) {
