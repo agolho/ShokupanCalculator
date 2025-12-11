@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary: #D97706;
+  --color-background-light: #F9FAFB;
+  --color-background-dark: #121212;
+  --color-surface-light: #FFFFFF;
+  --color-surface-dark: #1E1E1E;
+  --color-input-light: #F3F4F6;
+  --color-input-dark: #2C2C2C;
+
+  --font-display: "Merriweather", serif;
+  --font-sans: "Inter", sans-serif;
+
+  --radius-DEFAULT: 0.5rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+.hide-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom Checkbox Toggle */
+.toggle-checkbox:checked {
+  right: 0;
+  border-color: #D97706;
+}
+
+.toggle-checkbox:checked+.toggle-label {
+  background-color: #D97706;
+}
+
+/* Base Body Styles are handled by Tailwind utility classes in layout/components now, 
+   but we can set defaults here if needed */
+body {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
