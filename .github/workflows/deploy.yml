@@ -36,6 +36,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Debug Environment Variables
+        env:
+          API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY || vars.NEXT_PUBLIC_FIREBASE_API_KEY }}
+        run: |
+          if [ -z "$API_KEY" ]; then
+            echo "❌ ERROR: NEXT_PUBLIC_FIREBASE_API_KEY is empty or missing!"
+            exit 1
+          else
+            echo "✅ SUCCESS: NEXT_PUBLIC_FIREBASE_API_KEY found. Length: ${#API_KEY} characters."
+          fi
+
       - name: Build with Next.js
         run: npm run build
         env:
