@@ -8,13 +8,13 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyCCeeYwhP4ra6xnM3QJv9z6fMLaU37v8Xk",
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
     authDomain: "shokupan-e1a28.firebaseapp.com",
     projectId: "shokupan-e1a28",
     storageBucket: "shokupan-e1a28.firebasestorage.app",
     messagingSenderId: "228374610082",
-    appId: "1:228374610082:web:cc5bccfabfd8759c5517fb",
-    measurementId: "G-XRQ8PXWR19"
+    appId: "1:228374610082:web:6218fbc0178e60d75517fb",
+    measurementId: "G-L8C66HKN7G"
 };
 
 // Initialize Firebase
