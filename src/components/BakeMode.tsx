@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CalculationResult, Ingredient } from '../lib/types';
+import { CalculationResult } from '../lib/types';
 import { toImperialWeight } from '../lib/conversion';
 
 interface BakeModeProps {
@@ -27,16 +27,18 @@ export default function BakeMode({ results, onClose, unitSystem }: BakeModeProps
 
     // Wake Lock
     useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let wakeLock: any = null;
         const requestWakeLock = async () => {
             try {
                 if ('wakeLock' in navigator) {
-                    // @ts-ignore
+                    // navigator.wakeLock is experimental but types might be present
                     wakeLock = await navigator.wakeLock.request('screen');
                     console.log('Wake Lock is active');
                 }
-            } catch (err: any) {
-                console.error(`${err.name}, ${err.message}`);
+            } catch (err: unknown) {
+                const error = err as Error;
+                console.error(`${error.name}, ${error.message}`);
             }
         };
 

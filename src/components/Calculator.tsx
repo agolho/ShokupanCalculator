@@ -6,7 +6,7 @@ import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User 
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 // Debounce helper
-const useDebounce = (value: any, delay: number) => {
+const useDebounce = <T,>(value: T, delay: number): T => {
     const [debouncedValue, setDebouncedValue] = useState(value);
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -127,12 +127,13 @@ export default function Calculator() {
         try {
             const provider = new GoogleAuthProvider();
             await signInWithPopup(auth, provider);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Login failed:", error);
+            const err = error as Error;
             setModalConfig({
                 type: 'alert',
                 title: 'Login Error',
-                message: error.message || 'Failed to sign in',
+                message: err.message || 'Failed to sign in',
                 onConfirm: () => setModalConfig({ type: null })
             });
         }
@@ -148,6 +149,8 @@ export default function Calculator() {
 
     // --- Hydrate from localStorage (Only if NOT logged in or initial load) ---
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        /* eslint-disable react-hooks/set-state-in-effect */
         // Always load local config initially for instant render
         const saved = localStorage.getItem('shokupanState_v4');
         if (saved) {
@@ -198,9 +201,6 @@ export default function Calculator() {
         setIsLoaded(true);
     }, []);
 
-    const [isSaving, setIsSaving] = useState(false);
-    const [lastSaved, setLastSaved] = useState<Date | null>(null);
-
     // --- Debounced Saving ---
     const currentState = useMemo(() => ({
         pan,
@@ -235,18 +235,14 @@ export default function Calculator() {
     // Save to Firestore (If Logged In)
     useEffect(() => {
         if (user && !loadingAuth) {
-            setIsSaving(true);
             const saveToFirestore = async () => {
                 try {
                     // Filter undefined values
                     const cleanState = JSON.parse(JSON.stringify(debouncedState));
                     await setDoc(doc(db, 'users', user.uid), cleanState, { merge: true });
                     console.log("Synced to Firestore");
-                    setLastSaved(new Date());
                 } catch (err) {
                     console.error("Error saving to Firestore:", err);
-                } finally {
-                    setIsSaving(false);
                 }
             };
             saveToFirestore();
@@ -303,8 +299,10 @@ export default function Calculator() {
         let assignedLiquidTotal = 0;
 
         // A. Pre-ferments
-        const calculatedIngredients: Ingredient[] = ingredients.map(originalIng => {
-            // Clone to avoid mutating state directly in render (though map returns new array)
+        const calculatedIngredients: Ingredient[] = [];
+
+        for (const originalIng of ingredients) {
+            // Clone to avoid mutating state directly
             const ing: Ingredient = { ...originalIng };
 
             if (ing.type === 'preferment') {
@@ -325,8 +323,8 @@ export default function Calculator() {
                     assignedLiquidTotal += weight;
                 }
             }
-            return ing;
-        });
+            calculatedIngredients.push(ing);
+        }
 
         const waterSupplied = prefermentWaterTotal + assignedLiquidTotal;
         const mainWater = Math.max(0, totalTargetWater - waterSupplied);
@@ -346,7 +344,7 @@ export default function Calculator() {
             totalDough: Math.round(totalCalcWeight),
             ingredients: calculatedIngredients,
             panVolume: calculatedPanVolume
-        } as any;
+        } as CalculationResult;
     }, [pan, settings, ingredients, calculationMode, targetFlourInput]);
 
     // Handlers
@@ -613,6 +611,7 @@ export default function Calculator() {
                             title={user ? 'Logout' : 'Login'}
                         >
                             {user?.photoURL ? (
+                                // eslint-disable-next-line @next/next/no-img-element
                                 <img src={user.photoURL} alt="User" className="w-6 h-6 rounded-full" />
                             ) : (
                                 <span className="material-symbols-outlined text-[20px]">person</span>
